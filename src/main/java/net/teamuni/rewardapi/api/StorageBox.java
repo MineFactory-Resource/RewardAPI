@@ -9,13 +9,17 @@ public class StorageBox {
     private final UUID uuid;
     private final ArrayList<Reward> rewards;
 
-    public StorageBox(UUID uuid) {
+    private StorageBox(UUID uuid) {
         this.uuid = uuid;
         this.rewards = new ArrayList<>();
     }
-    public StorageBox(UUID uuid, Reward[] rewards) {
+    private StorageBox(UUID uuid, Reward[] rewards) {
         this(uuid);
         this.rewards.addAll(Arrays.asList(rewards));
+    }
+
+    public static StorageBox getStorageBox(UUID uuid) {
+        return null;
     }
 
     public UUID getUuid() {

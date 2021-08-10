@@ -6,7 +6,7 @@ public abstract class Reward {
 
     private ItemStack viewItem;
 
-    public Reward(ItemStack viewItem) {
+    protected Reward(ItemStack viewItem) {
         this.viewItem = viewItem;
     }
 
@@ -16,5 +16,9 @@ public abstract class Reward {
 
     public void setViewItem(ItemStack viewItem) {
         this.viewItem = viewItem;
+    }
+
+    public boolean isItemReward() {
+        return this instanceof ItemReward;
     }
 }
