@@ -1,12 +1,18 @@
 package net.teamuni.rewardapi;
 
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
+import java.nio.file.Path;
+import net.teamuni.rewardapi.api.Reward;
 import net.teamuni.rewardapi.command.AddCommand;
 import net.teamuni.rewardapi.command.RewardCommand;
+import net.teamuni.rewardapi.util.RewardSerialization;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.plugin.Plugin;
@@ -25,10 +31,14 @@ public class RewardAPI {
     private Logger logger;
     @Inject
     private PluginContainer plugin;
+    @Inject
+    @ConfigDir(sharedRoot = false)
+    private Path dataFolder;
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         instance = this;
+        TypeSerializerCollection.defaults().register(TypeToken.of(Reward.class), new RewardSerialization());
         CommandSpec addCommandSpec = CommandSpec.builder()
             .executor(new AddCommand())
             .arguments(
@@ -50,5 +60,9 @@ public class RewardAPI {
 
     public Logger getLogger() {
         return logger;
+    }
+
+    public Path getDataFolder() {
+        return dataFolder;
     }
 }
