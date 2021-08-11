@@ -1,12 +1,12 @@
 package net.teamuni.rewardapi.api;
 
-import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
 public class CommandReward extends Reward {
 
     private String[] commands;
 
-    public CommandReward(ItemStack viewItem, String[] commands) {
+    public CommandReward(ItemStackSnapshot viewItem, String[] commands) {
         super(viewItem);
         this.commands = commands;
     }
