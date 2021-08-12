@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import net.teamuni.rewardapi.api.Reward;
 import net.teamuni.rewardapi.command.AddCommand;
 import net.teamuni.rewardapi.command.RewardCommand;
-import net.teamuni.rewardapi.util.RewardSerialization;
+import net.teamuni.rewardapi.serializer.ItemSerializer;
+import net.teamuni.rewardapi.serializer.RewardSerializer;
+import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -15,6 +17,7 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
@@ -34,11 +37,14 @@ public class RewardAPI {
     @Inject
     @ConfigDir(sharedRoot = false)
     private Path dataFolder;
+    private ConfigurationOptions configOptions;
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         instance = this;
-        TypeSerializerCollection.defaults().register(TypeToken.of(Reward.class), new RewardSerialization());
+        this.configOptions = ConfigurationOptions.defaults().withSerializers(TypeSerializerCollection.defaults().newChild()
+            .register(TypeToken.of(ItemStackSnapshot.class), new ItemSerializer())
+            .register(TypeToken.of(Reward.class), new RewardSerializer()));
         CommandSpec addCommandSpec = CommandSpec.builder()
             .executor(new AddCommand())
             .arguments(
@@ -64,5 +70,9 @@ public class RewardAPI {
 
     public Path getDataFolder() {
         return dataFolder;
+    }
+
+    public ConfigurationOptions getConfigOptions() {
+        return configOptions;
     }
 }

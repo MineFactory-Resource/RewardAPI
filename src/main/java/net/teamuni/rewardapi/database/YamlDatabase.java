@@ -1,44 +1,79 @@
 package net.teamuni.rewardapi.database;
 
+import com.google.common.reflect.TypeToken;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
+import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.api.Reward;
 import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class YamlDatabase implements Database {
 
+    private final RewardAPI instance;
     private final Path dataFolder;
 
-    public YamlDatabase(Path dataFolder) throws IOException {
+    public YamlDatabase(RewardAPI instance, Path dataFolder) throws IOException {
+        this.instance = instance;
         this.dataFolder = dataFolder;
-        if (!Files.exists(dataFolder)) Files.createDirectory(dataFolder);
+        if (!Files.exists(dataFolder)) Files.createDirectories(dataFolder);
     }
 
     @Override
-    public Reward[] load(UUID uuid) throws IOException {
-        Path dataPath = dataFolder.resolve(uuid.toString()+".yml");
-        if (!Files.exists(dataPath)) Files.createFile(dataPath);
-        ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader.builder().setPath(dataPath).build();
+    public @NonNull Reward[] load(@NonNull UUID uuid) {
+        Path dataPath = null;
+        try {
+            dataPath = checkDataFile(uuid);
+        } catch (IOException e) {
+            instance.getLogger().error("Could not load data file. ("+uuid+")", e);
+            return new Reward[0];
+        }
+        ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader
+            .builder()
+            .setPath(dataPath)
+            .setDefaultOptions(instance.getConfigOptions())
+            .build();
         ConfigurationNode node;
         try {
             node = loader.load();
         } catch (IOException e) {
-            e.printStackTrace();
-            node = loader.createEmptyNode(ConfigurationOptions.defaults());
+            instance.getLogger().error("Could not load data file. ("+uuid+")", e);
+            return new Reward[0];
         }
 
-
-
-        return new Reward[0];
+        try {
+            List<Reward> rewardList = node.getValue(new TypeToken<List<Reward>>() {});
+            return rewardList != null ? rewardList.toArray(new Reward[0]) : new Reward[0];
+        } catch (ObjectMappingException e) {
+            instance.getLogger().error("Could not load data file. ("+uuid+")", e);
+            return new Reward[0];
+        }
     }
 
     @Override
-    public void save(UUID uuid, Reward[] rewards) {
+    public void save(@NonNull UUID uuid, @NonNull Reward[] rewards) {
+        Path dataPath = null;
+        try {
+            dataPath = checkDataFile(uuid);
+        } catch (IOException e) {
+            instance.getLogger().error("Could not save data file. ("+uuid+")", e);
+            return;
+        }
+        ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader.builder().setPath(dataPath).build();
+        // TODO
+    }
 
+    private Path checkDataFile(UUID uuid) throws IOException {
+        Path dataPath = dataFolder.resolve(uuid.toString()+".yml");
+        if (!Files.exists(dataPath)) {
+            Files.createFile(dataPath);
+        }
+        return dataPath;
     }
 }
