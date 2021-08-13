@@ -20,8 +20,8 @@ public class RewardSerializer implements TypeSerializer<Reward> {
         ItemStackSnapshot iss = value.getNode("viewItem").getValue(TypeToken.of(ItemStackSnapshot.class));
 
         ConfigurationNode rewardNode = value.getNode("rewardItems");
-        if (rewardNode.isVirtual()) {
-            List<ItemStackSnapshot> items = rewardNode.getValue(new TypeToken<List<ItemStackSnapshot>>() {});
+        if (!rewardNode.isVirtual()) {
+            List<ItemStackSnapshot> items = rewardNode.getList(TypeToken.of(ItemStackSnapshot.class));
             return new ItemReward(iss, items.toArray(new ItemStackSnapshot[0]));
         } else {
             rewardNode = value.getNode("commands");

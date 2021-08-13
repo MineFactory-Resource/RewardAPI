@@ -4,6 +4,7 @@ import com.google.common.reflect.TypeToken;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import net.teamuni.rewardapi.RewardAPI;
@@ -21,8 +22,7 @@ public class YamlDatabase implements Database {
 
     public YamlDatabase(RewardAPI instance, Path dataFolder) throws IOException {
         this.instance = instance;
-        this.dataFolder = dataFolder;
-        if (!Files.exists(dataFolder)) Files.createDirectories(dataFolder);
+        this.dataFolder = dataFolder.toAbsolutePath().resolve("data");
     }
 
     @Override
@@ -48,8 +48,8 @@ public class YamlDatabase implements Database {
         }
 
         try {
-            List<Reward> rewardList = node.getValue(new TypeToken<List<Reward>>() {});
-            return rewardList != null ? rewardList.toArray(new Reward[0]) : new Reward[0];
+            List<Reward> rewardList = node.getList(TypeToken.of(Reward.class));
+            return rewardList.toArray(new Reward[0]);
         } catch (ObjectMappingException e) {
             instance.getLogger().error("Could not load data file. ("+uuid+")", e);
             return new Reward[0];
@@ -65,11 +65,27 @@ public class YamlDatabase implements Database {
             instance.getLogger().error("Could not save data file. ("+uuid+")", e);
             return;
         }
-        ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader.builder().setPath(dataPath).build();
-        // TODO
+        ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader
+            .builder()
+            .setPath(dataPath)
+            .setDefaultOptions(instance.getConfigOptions())
+            .build();
+        ConfigurationNode node = loader.createEmptyNode();
+        try {
+            node.setValue(new TypeToken<List<Reward>>() {}, Arrays.asList(rewards));
+        } catch (ObjectMappingException e) {
+            instance.getLogger().error("Could not save data file. ("+uuid+")", e);
+            return;
+        }
+        try {
+            loader.save(node);
+        } catch (IOException e) {
+            instance.getLogger().error("Could not save data file. ("+uuid+")", e);
+        }
     }
 
     private Path checkDataFile(UUID uuid) throws IOException {
+        if (!Files.exists(dataFolder)) Files.createDirectories(dataFolder);
         Path dataPath = dataFolder.resolve(uuid.toString()+".yml");
         if (!Files.exists(dataPath)) {
             Files.createFile(dataPath);

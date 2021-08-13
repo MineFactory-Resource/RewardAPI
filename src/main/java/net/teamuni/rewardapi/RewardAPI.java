@@ -2,10 +2,14 @@ package net.teamuni.rewardapi;
 
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import net.teamuni.rewardapi.api.Reward;
 import net.teamuni.rewardapi.command.AddCommand;
 import net.teamuni.rewardapi.command.RewardCommand;
+import net.teamuni.rewardapi.database.Database;
+import net.teamuni.rewardapi.database.YamlDatabase;
 import net.teamuni.rewardapi.serializer.ItemSerializer;
 import net.teamuni.rewardapi.serializer.RewardSerializer;
 import ninja.leaping.configurate.ConfigurationOptions;
@@ -14,7 +18,6 @@ import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
-import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
@@ -30,14 +33,13 @@ import org.spongepowered.api.text.Text;
 public class RewardAPI {
 
     private static RewardAPI instance;
+    private final Path dataFolder = Paths.get("rewardapi");;
     @Inject
     private Logger logger;
     @Inject
     private PluginContainer plugin;
-    @Inject
-    @ConfigDir(sharedRoot = false)
-    private Path dataFolder;
     private ConfigurationOptions configOptions;
+    private Database database;
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
@@ -56,7 +58,11 @@ public class RewardAPI {
         CommandSpec rewardCommandSpec = CommandSpec.builder()
             .child(addCommandSpec, "add").executor(new RewardCommand())
             .build();
-
+        try {
+            this.database = new YamlDatabase(instance, dataFolder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Sponge.getCommandManager().register(plugin, rewardCommandSpec, "rewardapi", "reward");
     }
 
@@ -74,5 +80,9 @@ public class RewardAPI {
 
     public ConfigurationOptions getConfigOptions() {
         return configOptions;
+    }
+
+    public Database getDatabase() {
+        return database;
     }
 }
