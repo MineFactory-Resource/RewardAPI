@@ -20,7 +20,7 @@ public class YamlDatabase implements Database {
     private final RewardAPI instance;
     private final Path dataFolder;
 
-    public YamlDatabase(RewardAPI instance, Path dataFolder) throws IOException {
+    public YamlDatabase(RewardAPI instance, Path dataFolder) {
         this.instance = instance;
         this.dataFolder = dataFolder.toAbsolutePath().resolve("data");
     }

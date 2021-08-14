@@ -2,12 +2,12 @@ package net.teamuni.rewardapi;
 
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import net.teamuni.rewardapi.api.Reward;
 import net.teamuni.rewardapi.command.AddCommand;
 import net.teamuni.rewardapi.command.RewardCommand;
+import net.teamuni.rewardapi.data.PlayerDataManager;
 import net.teamuni.rewardapi.database.Database;
 import net.teamuni.rewardapi.database.YamlDatabase;
 import net.teamuni.rewardapi.serializer.ItemSerializer;
@@ -40,6 +40,7 @@ public class RewardAPI {
     private PluginContainer plugin;
     private ConfigurationOptions configOptions;
     private Database database;
+    private PlayerDataManager playerDataManager;
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
@@ -58,11 +59,9 @@ public class RewardAPI {
         CommandSpec rewardCommandSpec = CommandSpec.builder()
             .child(addCommandSpec, "add").executor(new RewardCommand())
             .build();
-        try {
-            this.database = new YamlDatabase(instance, dataFolder);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.database = new YamlDatabase(instance, dataFolder);
+        this.playerDataManager = new PlayerDataManager(this);
+        Sponge.getEventManager().registerListeners(this, this.playerDataManager);
         Sponge.getCommandManager().register(plugin, rewardCommandSpec, "rewardapi", "reward");
     }
 
@@ -84,5 +83,9 @@ public class RewardAPI {
 
     public Database getDatabase() {
         return database;
+    }
+
+    public PlayerDataManager getPlayerDataManager() {
+        return playerDataManager;
     }
 }
