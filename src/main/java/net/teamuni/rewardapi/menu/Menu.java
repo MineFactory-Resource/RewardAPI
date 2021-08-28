@@ -1,15 +1,12 @@
 package net.teamuni.rewardapi.menu;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.WeakHashMap;
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.base.Preconditions;
 import net.teamuni.rewardapi.RewardAPI;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
-import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.InventoryArchetypes;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -24,18 +21,14 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 
 public abstract class Menu {
 
-    private static final Set<Menu> menus = Collections.newSetFromMap(new WeakHashMap<Menu, Boolean>());
+    protected final Inventory inv;
 
-    private final Inventory inv;
-
-    public Menu(@NonNull String title, int rows) {
-        if (rows < 1 || rows > 6) {
-            throw new IllegalArgumentException("Rows parameter must be between 1 and 6.");
-        }
-        menus.add(this);
+    protected Menu(@NonNull String title, int rows) {
+        checkArgument(rows >= 1 && rows <= 6, "Rows parameter must be between 1 and 6.", rows);
         this.inv = Inventory.builder()
             .of(InventoryArchetypes.DOUBLE_CHEST)
-            .property(InventoryTitle.PROPERTY_NAME, InventoryTitle.of(TextSerializers.FORMATTING_CODE.deserialize(title)))
+            .property(InventoryTitle.PROPERTY_NAME,
+                InventoryTitle.of(TextSerializers.FORMATTING_CODE.deserialize(title)))
             .property(InventoryDimension.PROPERTY_NAME, InventoryDimension.of(9, rows))
             .listener(ClickInventoryEvent.class, this::onClick)
             .build(RewardAPI.getInstance());
@@ -57,13 +50,20 @@ public abstract class Menu {
         if (event.getTransactions().isEmpty()) {
             return;
         }
+
         SlotTransaction st = event.getTransactions().get(0);
-        int slot = st.getSlot().getInventoryProperty(SlotIndex.class).map(AbstractInventoryProperty::getValue).orElse(-1);
+        int slot = st.getSlot().getInventoryProperty(SlotIndex.class)
+            .map(AbstractInventoryProperty::getValue).orElse(-1);
+
         if (slot < 0 || slot >= inv.capacity()) {
             return;
         }
+
         event.setCancelled(true);
+        event.getCause().first(Player.class).ifPresent(p -> {
+            onClick(p, slot, st.getSlot(), ClickType.fromEvent(event));
+        });
     }
 
-    protected abstract void onClick(int slotIndex, Slot slot, ClickType clickType);
+    protected abstract void onClick(Player player, int slotIndex, Slot slot, ClickType clickType);
 }

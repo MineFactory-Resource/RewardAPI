@@ -14,7 +14,7 @@ public class RewardCommand implements CommandExecutor {
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         if (src instanceof Player) {
             Player p = (Player) src;
-            //new StorageBoxMenu(p.getUniqueId()).open(p);
+            new StorageBoxMenu(p.getUniqueId()).open(p);
             // TODO
         }
         return CommandResult.success();
