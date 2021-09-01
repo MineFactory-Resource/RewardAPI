@@ -7,6 +7,7 @@ import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.api.CommandReward;
 import net.teamuni.rewardapi.api.ItemReward;
 import net.teamuni.rewardapi.api.Reward;
+import net.teamuni.rewardapi.config.MessageStorage;
 import net.teamuni.rewardapi.data.PlayerDataManager;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
@@ -82,7 +83,8 @@ public class StorageBoxMenu extends Menu {
                     player.getInventory().offer(item);
                 }
             } else {
-                player.sendMessage(Text.of("공간 부족")); //TODO Config에서 변경 가능하게
+                MessageStorage messageStorage = RewardAPI.getInstance().getMessageStorage();
+                player.sendMessage(messageStorage.getMessage("out_of_space"));
             }
         } else {
             CommandReward commandReward = (CommandReward) reward;

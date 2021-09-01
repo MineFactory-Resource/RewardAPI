@@ -37,7 +37,6 @@ public class YamlDatabase implements Database {
         ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader
             .builder()
             .setPath(dataPath)
-            .setDefaultOptions(instance.getConfigOptions())
             .build();
         ConfigurationNode node;
         try {
@@ -68,7 +67,6 @@ public class YamlDatabase implements Database {
         ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader
             .builder()
             .setPath(dataPath)
-            .setDefaultOptions(instance.getConfigOptions())
             .build();
         ConfigurationNode node = loader.createEmptyNode();
         try {
