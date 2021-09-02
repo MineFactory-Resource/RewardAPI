@@ -1,13 +1,15 @@
 package net.teamuni.rewardapi.config;
 
+import com.google.common.reflect.TypeToken;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Optional;
-import com.google.common.reflect.TypeToken;
 import java.nio.file.Path;
+import java.util.Optional;
 import net.teamuni.rewardapi.RewardAPI;
+import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 
@@ -17,21 +19,24 @@ public class ConfigManager {
     private final Path file;
     private final HoconConfigurationLoader loader;
     private CommentedConfigurationNode node;
+    private ConfigurationNode defaults = ConfigurationNode.root();
 
     public ConfigManager(Path folder, String fileName, Logger logger) {
         this.logger = logger;
         folder.toFile().mkdirs();
         this.file = folder.resolve(fileName);
-        if (!Files.exists(this.file)) {
-            Sponge.getAssetManager().getAsset(RewardAPI.getInstance(), fileName)
-                .ifPresent(asset -> {
-                    try {
+        Sponge.getAssetManager().getAsset(RewardAPI.getInstance(), fileName)
+            .ifPresent(asset -> {
+                try {
+                    if (!Files.exists(this.file)) {
                         asset.copyToFile(this.file);
-                    } catch (IOException e) {
-                        this.logger.error("Failed to load default config file: " + fileName, e);
                     }
-                });
-        }
+                    defaults = HoconConfigurationLoader.builder().setURL(asset.getUrl()).build()
+                        .load();
+                } catch (IOException e) {
+                    this.logger.error("Failed to load default config file: " + fileName, e);
+                }
+            });
         if (!Files.exists(this.file)) {
             try {
                 Files.createFile(this.file);
@@ -74,31 +79,30 @@ public class ConfigManager {
         setDefault("", type, value, nodes);
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     public <T> Optional<T> getValue(Class<T> type, String... nodes) {
+        TypeToken<T> token = TypeToken.of(type);
         CommentedConfigurationNode node = this.node.getNode((Object[]) nodes);
+
+        T value = null;
         try {
-            return Optional.ofNullable(node.getValue(TypeToken.of(type)));
-        } catch (Exception e) {
+            value = node.getValue(token);
+        } catch (ObjectMappingException e) {
             this.logger.error("Failed to map object: " + file.getFileName(), e);
-            return Optional.empty();
         }
+
+        if (value == null) {
+            try {
+                value = defaults.getNode((Object[]) nodes).getValue(token);
+            } catch (ObjectMappingException ignored) {
+            }
+        }
+
+        return Optional.ofNullable(value);
     }
 
     public <T> T getValue(Class<T> type, T defaultValue, String... nodes) {
-        CommentedConfigurationNode node = this.node.getNode((Object[]) nodes);
-        if (node.isVirtual()) {
-            return defaultValue;
-        }
-        try {
-            return node.getValue(TypeToken.of(type));
-        } catch (Exception e) {
-            this.logger.error("Failed to map object: " + file.getFileName(), e);
-            return defaultValue;
-        }
-    }
-
-    public <T> T getValue(T defaultValue, Class<T> type, String... nodes) {
-        return this.getValue(type, defaultValue, nodes);
+        return getValue(type, nodes).orElse(defaultValue);
     }
 
     public <T> void setValue(T value, String... nodes) {

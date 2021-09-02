@@ -22,6 +22,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
@@ -50,7 +51,7 @@ public class RewardAPI {
     private PlayerDataManager playerDataManager;
 
     @Listener
-    public void onServerStart(GameStartedServerEvent event) {
+    public void onServerStart(GameInitializationEvent event) {
         instance = this;
 
         TypeSerializerCollection.defaults()

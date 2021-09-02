@@ -71,7 +71,7 @@ public class StorageBoxMenu extends Menu {
         if (slotIndex - 9 >= rewards.size()) {
             return;
         }
-        Reward reward = rewards.remove(slotIndex - 9);
+        Reward reward = rewards.get(slotIndex - 9);
         if (reward.isItemReward()) {
             ItemReward itemReward = (ItemReward) reward;
             List<ItemStack> items = new ArrayList<>();
@@ -84,7 +84,8 @@ public class StorageBoxMenu extends Menu {
                 }
             } else {
                 MessageStorage messageStorage = RewardAPI.getInstance().getMessageStorage();
-                player.sendMessage(messageStorage.getMessage("out_of_space"));
+                player.sendMessage(messageStorage.getMessage("menu", "out_of_space"));
+                return;
             }
         } else {
             CommandReward commandReward = (CommandReward) reward;
@@ -92,6 +93,7 @@ public class StorageBoxMenu extends Menu {
                 Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
             }
         }
+        rewards.remove(slotIndex - 9);
         // TODO 이펙트
         Sponge.getScheduler().createTaskBuilder().execute(this::update).submit(RewardAPI.getInstance());
     }
