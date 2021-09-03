@@ -33,7 +33,7 @@ public class SimpleItemStack {
         ItemStack.Builder builder = ItemStack.builder().itemType(this.type);
 
         if (data != 0) {
-            builder.fromContainer(DataContainer.createNew().set(DataQuery.of("UnsafeDamage"), data));
+            builder.fromContainer(this.type.getTemplate().toContainer().set(DataQuery.of("UnsafeDamage"), data));
         }
         if (this.name != null) {
             builder.add(Keys.DISPLAY_NAME, this.name);
