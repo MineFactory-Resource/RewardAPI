@@ -7,7 +7,7 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
 public class MenuPattern {
-    private Map<Character, ItemStackSnapshot> mappping = new HashMap<>();
+    private final Map<Character, ItemStackSnapshot> mappping = new HashMap<>();
     private String pattern;
 
     @NonNull
@@ -26,10 +26,12 @@ public class MenuPattern {
         return this;
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     void apply(@NonNull Menu menu) {
         final int[] i = {0};
-        this.pattern.chars().mapToObj(e -> (char)e).forEach(c -> {
+        this.pattern.chars().mapToObj(e -> (char)e).anyMatch(c -> {
             menu.setItem(i[0]++, (c != '_' && c != ' ') ? this.mappping.get(c).createStack() : ItemStack.empty());
+            return i[0] >= menu.getCapacity();
         });
     }
 }

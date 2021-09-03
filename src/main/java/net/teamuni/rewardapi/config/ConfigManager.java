@@ -21,8 +21,9 @@ public class ConfigManager {
     private CommentedConfigurationNode node;
     private ConfigurationNode defaults = ConfigurationNode.root();
 
-    public ConfigManager(Path folder, String fileName, Logger logger) {
-        this.logger = logger;
+    public ConfigManager(String fileName) {
+        Path folder = RewardAPI.getInstance().getConfigDir();
+        this.logger = RewardAPI.getInstance().getLogger();
         folder.toFile().mkdirs();
         this.file = folder.resolve(fileName);
         Sponge.getAssetManager().getAsset(RewardAPI.getInstance(), fileName)
@@ -81,7 +82,15 @@ public class ConfigManager {
 
     @SuppressWarnings("UnstableApiUsage")
     public <T> Optional<T> getValue(Class<T> type, String... nodes) {
-        TypeToken<T> token = TypeToken.of(type);
+        return getValue(TypeToken.of(type), nodes);
+    }
+
+    public <T> T getValue(Class<T> type, T defaultValue, String... nodes) {
+        return getValue(type, nodes).orElse(defaultValue);
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public <T> Optional<T> getValue(TypeToken<T> token, String... nodes) {
         CommentedConfigurationNode node = this.node.getNode((Object[]) nodes);
 
         T value = null;
@@ -101,14 +110,14 @@ public class ConfigManager {
         return Optional.ofNullable(value);
     }
 
-    public <T> T getValue(Class<T> type, T defaultValue, String... nodes) {
-        return getValue(type, nodes).orElse(defaultValue);
+    public String getString(String def, String... nodes) {
+        return getValue(String.class, nodes).orElse(def);
     }
 
-    public <T> void setValue(T value, String... nodes) {
+    public <T> void setValue(TypeToken<T> token, T value, String... nodes) {
         try {
             CommentedConfigurationNode node = this.node.getNode((Object[]) nodes);
-            node.setValue(value);
+            node.setValue(token, value);
         } catch (Exception e) {
             this.logger.error("Failed to set value: " + file.getFileName(), e);
         }

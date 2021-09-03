@@ -1,50 +1,48 @@
 package net.teamuni.rewardapi.menu;
 
+import com.google.common.reflect.TypeToken;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.api.CommandReward;
 import net.teamuni.rewardapi.api.ItemReward;
 import net.teamuni.rewardapi.api.Reward;
+import net.teamuni.rewardapi.config.ConfigManager;
 import net.teamuni.rewardapi.config.MessageStorage;
+import net.teamuni.rewardapi.config.SimpleItemStack;
 import net.teamuni.rewardapi.data.PlayerDataManager;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.type.DyeColors;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.inventory.Slot;
-import org.spongepowered.api.text.Text;
 
 public class StorageBoxMenu extends Menu {
 
-    private static final MenuPattern menuPattern;
+    private static MenuPattern menuPattern;
+    private static String title;
+    private static int rows;
     private final UUID uuid;
+    private int page = 0;
 
-    static {
-        // TODO Config에서 변경 가능하게
-        menuPattern = new MenuPattern()
-            .setItem('A', ItemStack.builder()
-                .itemType(ItemTypes.STAINED_GLASS_PANE)
-                .add(Keys.DISPLAY_NAME, Text.EMPTY)
-                .add(Keys.DYE_COLOR, DyeColors.PURPLE)
-                .build().createSnapshot())
-            .setItem('B', ItemTypes.SIGN.getTemplate())
-            .setPattern(
-                "AAAABAAAA",
-                "_________",
-                "_________",
-                "_________",
-                "_________",
-                "AAAAAAAAA"
-            );
+    public static void init() {
+        ConfigManager menuConfig = RewardAPI.getInstance().getMenuConfig();
+
+        title = menuConfig.getString("", "storage_box", "title");
+        rows = menuConfig.getValue(Integer.class, 6, "storage_box", "rows");
+
+        List<String> pattern = menuConfig.getValue(new TypeToken<List<String>>() {}, "storage_box", "pattern").orElse(Collections.emptyList());
+        menuPattern = new MenuPattern().setPattern(pattern.toArray(new String[0]));
+
+        Map<Character, SimpleItemStack> map2 = menuConfig.getValue(new TypeToken<Map<Character, SimpleItemStack>>() {}, "storage_box", "items").orElse(Collections.emptyMap());
+        map2.forEach((key, value) -> menuPattern.setItem(key, value.createItemStack().createSnapshot()));
     }
 
     public StorageBoxMenu(UUID uuid) {
-        super("&6보관함", 6); //TODO Config에서 변경 가능하게
+        super(title, rows); //TODO Config에서 변경 가능하게
         this.uuid = uuid;
         applyPattern(menuPattern);
         update();

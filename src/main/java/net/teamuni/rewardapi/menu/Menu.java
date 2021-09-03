@@ -65,5 +65,9 @@ public abstract class Menu {
         });
     }
 
+    public int getCapacity() {
+        return inv.capacity();
+    }
+
     protected abstract void onClick(Player player, int slotIndex, Slot slot, ClickType clickType);
 }
