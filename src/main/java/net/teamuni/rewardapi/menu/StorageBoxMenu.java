@@ -16,9 +16,11 @@ import net.teamuni.rewardapi.config.SimpleItemStack;
 import net.teamuni.rewardapi.data.PlayerDataManager;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.inventory.Slot;
+import org.spongepowered.api.item.inventory.entity.UserInventory;
 
 public class StorageBoxMenu extends Menu {
 
@@ -76,7 +78,7 @@ public class StorageBoxMenu extends Menu {
             for (ItemStackSnapshot iss : itemReward.getRewardItems()) {
                 items.add(iss.createStack());
             }
-            if (items.stream().allMatch((item) -> player.getInventory().canFit(item))) {
+            if (items.stream().allMatch((item) -> ((UserInventory<? extends User>) player.getInventory()).getMain().canFit(item))) {
                 for (ItemStack item : items) {
                     player.getInventory().offer(item);
                 }
