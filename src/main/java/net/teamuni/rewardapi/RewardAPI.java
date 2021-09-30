@@ -25,6 +25,7 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
@@ -85,6 +86,11 @@ public class RewardAPI {
         this.playerDataManager = new PlayerDataManager(this);
         Sponge.getEventManager().registerListeners(this, this.playerDataManager);
         Sponge.getCommandManager().register(this, rewardCommandSpec, "rewardapi", "reward");
+    }
+
+    @Listener
+    public void onServerStop(GameStoppingEvent event) {
+        playerDataManager.unloadAllData();
     }
 
     public Logger getLogger() {

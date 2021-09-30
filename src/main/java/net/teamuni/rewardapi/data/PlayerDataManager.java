@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.api.Reward;
+import net.teamuni.rewardapi.database.Database;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 
@@ -42,6 +43,17 @@ public class PlayerDataManager {
         }
         savePlayerData(uuid);
         playerDataMap.remove(uuid);
+    }
+
+    public void unloadAllData() {
+        if (playerDataMap.isEmpty()) {
+            return;
+        }
+        Database database = instance.getDatabase();
+        for (Map.Entry<UUID, List<Reward>> entry : playerDataMap.entrySet()) {
+            database.save(entry.getKey(), entry.getValue().toArray(new Reward[0]));
+        }
+        playerDataMap.clear();
     }
 
     public List<Reward> getPlayerData(UUID uuid) {
