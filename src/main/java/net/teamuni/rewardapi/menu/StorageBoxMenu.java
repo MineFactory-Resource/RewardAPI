@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.api.CommandReward;
 import net.teamuni.rewardapi.api.ItemReward;
@@ -27,39 +28,63 @@ public class StorageBoxMenu extends Menu {
     private static MenuPattern menuPattern;
     private static String title;
     private static int rows;
+    private static int countReward;
+
     private final UUID uuid;
-    private int page = 0;
-
-    public static void init() {
-        ConfigManager menuConfig = RewardAPI.getInstance().getMenuConfig();
-
-        title = menuConfig.getString("", "storage_box", "title");
-        rows = menuConfig.getValue(Integer.class, 6, "storage_box", "rows");
-
-        List<String> pattern = menuConfig.getValue(new TypeToken<List<String>>() {}, "storage_box", "pattern").orElse(Collections.emptyList());
-        menuPattern = new MenuPattern().setPattern(pattern.toArray(new String[0]));
-
-        Map<Character, SimpleItemStack> map2 = menuConfig.getValue(new TypeToken<Map<Character, SimpleItemStack>>() {}, "storage_box", "items").orElse(Collections.emptyMap());
-        map2.forEach((key, value) -> menuPattern.setItem(key, value.createItemStack().createSnapshot()));
-    }
+    private int page = 1;
 
     public StorageBoxMenu(UUID uuid) {
-        super(title, rows); //TODO Config에서 변경 가능하게
+        super(title, rows);
         this.uuid = uuid;
         applyPattern(menuPattern);
         update();
     }
 
+    public static void init() {
+        ConfigManager menuConfig = RewardAPI.getInstance().getMenuConfig();
+
+        title = menuConfig.getString("", "storagebox", "title");
+        rows = menuConfig.getValue(Integer.class, 6, "storagebox", "rows");
+
+        String pattern = String.join("", menuConfig.getValue(new TypeToken<List<String>>() {}, "storagebox", "pattern")
+                .orElse(Collections.emptyList()));
+        try {
+            pattern = pattern.substring(0, rows * 9);
+        } catch (StringIndexOutOfBoundsException ignored) {}
+
+        menuPattern = new MenuPattern().setPattern(pattern);
+        countReward = countChar(pattern, '_');
+
+        Map<Character, SimpleItemStack> map2 = menuConfig.getValue(
+            new TypeToken<Map<Character, SimpleItemStack>>() {},
+            "storagebox", "items").orElse(Collections.emptyMap());
+        map2.entrySet().stream()
+            .filter(entry -> entry.getKey() != ' ' && entry.getKey() != '_')
+            .forEach(entry -> menuPattern.setItem(entry.getKey(),
+                entry.getValue().createItemStack().createSnapshot()));
+    }
+
+    private static int countChar(String str, char ch) {
+        return Math.toIntExact(str.chars().filter(c -> c == ch).count());
+    }
+
     public void update() {
         PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
         List<Reward> rewards = playerDataManager.getPlayerData(uuid);
-        for (int i = 0; i < 36; i++) {
-            setItem(i + 9, i < rewards.size() ? rewards.get(i).getViewItem().createStack()
-                : ItemStack.empty());
+
+        int start = (page - 1) * countReward;
+        int end = Math.min(page * countReward + 1, rewards.size());
+
+        if (start > end) {
+            return;
         }
 
+        menuPattern.updateReward(this,
+            rewards.subList(start, end)
+                .stream()
+                .map(reward -> reward.getViewItem().createStack())
+                .collect(Collectors.toList()));
     }
-
 
     @Override
     protected void onClick(Player player, int slotIndex, Slot slot, ClickType clickType) {
@@ -78,7 +103,8 @@ public class StorageBoxMenu extends Menu {
             for (ItemStackSnapshot iss : itemReward.getRewardItems()) {
                 items.add(iss.createStack());
             }
-            if (items.stream().allMatch((item) -> ((UserInventory<? extends User>) player.getInventory()).getMain().canFit(item))) {
+            if (items.stream().allMatch(item ->
+                ((UserInventory<? extends User>) player.getInventory()).getMain().canFit(item))) {
                 for (ItemStack item : items) {
                     player.getInventory().offer(item);
                 }
@@ -95,6 +121,8 @@ public class StorageBoxMenu extends Menu {
         }
         rewards.remove(slotIndex - 9);
         // TODO 이펙트
-        Sponge.getScheduler().createTaskBuilder().execute(this::update).submit(RewardAPI.getInstance());
+        Sponge.getScheduler().createTaskBuilder()
+            .execute(this::update)
+            .submit(RewardAPI.getInstance());
     }
 }
