@@ -3,22 +3,13 @@ package net.teamuni.rewardapi.serializer;
 import com.google.common.reflect.TypeToken;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import net.teamuni.rewardapi.config.SimpleItemStack;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.DataContainer;
-import org.spongepowered.api.data.persistence.DataTranslator;
-import org.spongepowered.api.data.persistence.DataTranslators;
 import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.serializer.TextSerializers;
 
 public class SimpleItemSerializer implements TypeSerializer<SimpleItemStack> {
 

@@ -41,7 +41,7 @@ public class RewardSerializer implements TypeSerializer<Reward> {
         if (obj.isItemReward()) {
             ItemReward itemReward = (ItemReward) obj;
             List<ItemStackSnapshot> items = Arrays.asList(itemReward.getRewardItems());
-            value.getNode("rewardItems").setValue(new TypeToken<List<ItemStackSnapshot>>() {}, items); // TODO 작동 확인 테스트 필요
+            value.getNode("rewardItems").setValue(new TypeToken<List<ItemStackSnapshot>>() {}, items);
         } else {
             value.getNode("commands").setValue(TypeToken.of(String[].class), ((CommandReward) obj).getCommands());
         }

@@ -22,6 +22,7 @@ public class YamlDatabase implements Database {
 
     public YamlDatabase(RewardAPI instance, Path dataFolder) {
         this.instance = instance;
+        // TODO Config에서 데이터 폴더 설정 가져오기
         this.dataFolder = dataFolder.toAbsolutePath().resolve("data");
     }
 
