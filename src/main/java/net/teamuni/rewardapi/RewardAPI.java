@@ -41,7 +41,7 @@ public class RewardAPI {
     private Logger logger;
 
     @Inject
-    @ConfigDir(sharedRoot = false)
+    @ConfigDir(sharedRoot = true)
     private Path configDir;
     private Database database;
     private PlayerDataManager playerDataManager;
@@ -63,9 +63,9 @@ public class RewardAPI {
             .register(TypeToken.of(ItemStackSnapshot.class), new ItemSerializer())
             .register(TypeToken.of(Reward.class), new RewardSerializer());
 
-        this.config = new ConfigManager("config.conf");
-        this.menuConfig = new ConfigManager("menu.conf");
-        this.messageStorage = new MessageStorage();
+        this.config = new ConfigManager("rewardapi.conf");
+        this.menuConfig = new ConfigManager(this.config, "menu");
+        this.messageStorage = new MessageStorage(this.config, "message");
 
         StorageBoxMenu.init();
 

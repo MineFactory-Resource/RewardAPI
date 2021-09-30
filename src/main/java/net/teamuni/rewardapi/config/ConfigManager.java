@@ -53,6 +53,13 @@ public class ConfigManager {
         }
     }
 
+    public ConfigManager(ConfigManager superConfig, String... startNode) {
+        this.logger = RewardAPI.getInstance().getLogger();
+        this.file = superConfig.file;
+        this.loader = superConfig.loader;
+        this.node = superConfig.node.getNode((Object[]) startNode);
+    }
+
     public void setComment(String comment, String... nodes) {
         try {
             CommentedConfigurationNode node = this.node.getNode((Object[]) nodes);

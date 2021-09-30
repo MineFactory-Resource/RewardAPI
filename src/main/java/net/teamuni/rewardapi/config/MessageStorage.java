@@ -5,8 +5,8 @@ import org.spongepowered.api.text.Text;
 
 public class MessageStorage extends ConfigManager {
 
-    public MessageStorage() {
-        super("message.conf");
+    public MessageStorage(ConfigManager superConfig, String... startNode) {
+        super(superConfig, startNode);
     }
 
     public String getRawMessage(String... key) {
