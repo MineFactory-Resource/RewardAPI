@@ -9,17 +9,20 @@ import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
 public class MenuPattern {
     private final Map<Character, ItemStackSnapshot> mappping = new HashMap<>();
-    private String pattern;
+    private final String pattern;
+
+    public MenuPattern(@NonNull String pattern) {
+        this.pattern = pattern;
+    }
+
+    @NonNull
+    public String getPattern() {
+        return this.pattern;
+    }
 
     @NonNull
     public MenuPattern setItem(char key, @NonNull ItemStackSnapshot is) {
         this.mappping.put(key, is);
-        return this;
-    }
-
-    @NonNull
-    public MenuPattern setPattern(@NonNull String pattern) {
-        this.pattern = pattern;
         return this;
     }
 

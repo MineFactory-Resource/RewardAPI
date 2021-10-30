@@ -52,7 +52,7 @@ public class StorageBoxMenu extends Menu {
             pattern = pattern.substring(0, rows * 9);
         } catch (StringIndexOutOfBoundsException ignored) {}
 
-        menuPattern = new MenuPattern().setPattern(pattern);
+        menuPattern = new MenuPattern(pattern);
         countReward = countChar(pattern, '_');
 
         Map<Character, SimpleItemStack> map2 = menuConfig.getValue(
@@ -88,15 +88,18 @@ public class StorageBoxMenu extends Menu {
 
     @Override
     protected void onClick(Player player, int slotIndex, Slot slot, ClickType clickType) {
-        if (slotIndex < 9 || slotIndex > 43) {
+        String pattern = menuPattern.getPattern();
+        if (pattern.charAt(slotIndex) != '_') {
             return;
         }
+
+        int rewardIndex = getRewardIndex(slotIndex);
         PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
         List<Reward> rewards = playerDataManager.getPlayerData(uuid);
-        if (slotIndex - 9 >= rewards.size()) {
+        if (rewardIndex >= rewards.size()) {
             return;
         }
-        Reward reward = rewards.get(slotIndex - 9);
+        Reward reward = rewards.get(rewardIndex);
         if (reward.isItemReward()) {
             ItemReward itemReward = (ItemReward) reward;
             List<ItemStack> items = new ArrayList<>();
@@ -119,10 +122,26 @@ public class StorageBoxMenu extends Menu {
                 Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
             }
         }
-        rewards.remove(slotIndex - 9);
+        rewards.remove(rewardIndex);
         // TODO 이펙트
         Sponge.getScheduler().createTaskBuilder()
             .execute(this::update)
             .submit(RewardAPI.getInstance());
+    }
+
+    private int getRewardIndex(int slotIndex) {
+        String pattern = menuPattern.getPattern();
+
+        int tmp = 0;
+        int n = 0;
+        for (char c : pattern.toCharArray()) {
+            if (c == '_') {
+                tmp++;
+            }
+            if (n++ >= slotIndex) {
+                break;
+            }
+        }
+        return (page - 1) * countReward + tmp - 1;
     }
 }
