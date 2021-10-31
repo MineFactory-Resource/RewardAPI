@@ -87,7 +87,11 @@ public class StorageBoxMenu extends Menu {
     }
 
     @Override
-    protected void onClick(Player player, int slotIndex, Slot slot, ClickType clickType) {
+    protected void onClick(Player player, int slotIndex, Slot slot,
+        ItemStackSnapshot clickedItem, ClickType clickType) {
+        if (clickedItem.isEmpty()) {
+            return;
+        }
         String pattern = menuPattern.getPattern();
         if (pattern.charAt(slotIndex) != '_') {
             return;

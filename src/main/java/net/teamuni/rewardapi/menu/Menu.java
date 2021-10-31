@@ -2,7 +2,6 @@ package net.teamuni.rewardapi.menu;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.base.Preconditions;
 import net.teamuni.rewardapi.RewardAPI;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.entity.living.player.Player;
@@ -10,6 +9,7 @@ import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.InventoryArchetypes;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.inventory.Slot;
 import org.spongepowered.api.item.inventory.property.AbstractInventoryProperty;
 import org.spongepowered.api.item.inventory.property.InventoryDimension;
@@ -61,7 +61,7 @@ public abstract class Menu {
 
         event.setCancelled(true);
         event.getCause().first(Player.class).ifPresent(p -> {
-            onClick(p, slot, st.getSlot(), ClickType.fromEvent(event));
+            onClick(p, slot, st.getSlot(), st.getOriginal(), ClickType.fromEvent(event));
         });
     }
 
@@ -69,5 +69,5 @@ public abstract class Menu {
         return inv.capacity();
     }
 
-    protected abstract void onClick(Player player, int slotIndex, Slot slot, ClickType clickType);
+    protected abstract void onClick(Player player, int slotIndex, Slot slot, ItemStackSnapshot clickItem, ClickType clickType);
 }
