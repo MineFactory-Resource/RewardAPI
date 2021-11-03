@@ -8,6 +8,7 @@ import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
@@ -28,7 +29,7 @@ public class SimpleItemStack {
         this.lores = lores.stream().map(TextSerializers.FORMATTING_CODE::deserialize).collect(Collectors.toList());
     }
 
-    public ItemStack createItemStack() {
+    public ItemStackSnapshot createItemStackSnapShot() {
         ItemStack.Builder builder = ItemStack.builder().itemType(this.type);
 
         if (data != 0) {
@@ -40,7 +41,7 @@ public class SimpleItemStack {
         if (!this.lores.isEmpty()) {
             builder.add(Keys.ITEM_LORE, this.lores);
         }
-        return builder.build();
+        return builder.build().createSnapshot();
     }
 
 

@@ -20,10 +20,8 @@ public class MenuPattern {
         return this.pattern;
     }
 
-    @NonNull
-    public MenuPattern setItem(char key, @NonNull ItemStackSnapshot is) {
+    public void setItem(char key, @NonNull ItemStackSnapshot is) {
         this.mappping.put(key, is);
-        return this;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -43,5 +41,9 @@ public class MenuPattern {
             }
             i[0]++;
         });;
+    }
+
+    void updateTurningButton(@NonNull Menu menu, boolean canTurnLeft, boolean canTurnRight) {
+        // TODO 컨피그에서 아이템 가져와서 적용
     }
 }

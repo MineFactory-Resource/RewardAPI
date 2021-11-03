@@ -59,9 +59,11 @@ public class StorageBoxMenu extends Menu {
             new TypeToken<Map<Character, SimpleItemStack>>() {},
             "storagebox", "items").orElse(Collections.emptyMap());
         map2.entrySet().stream()
-            .filter(entry -> entry.getKey() != ' ' && entry.getKey() != '_')
+            .filter(entry ->
+                entry.getKey() != ' ' && entry.getKey() != '_' &&
+                entry.getKey() != 'L' && entry.getKey() != 'R')
             .forEach(entry -> menuPattern.setItem(entry.getKey(),
-                entry.getValue().createItemStack().createSnapshot()));
+                entry.getValue().createItemStackSnapShot()));
     }
 
     private static int countChar(String str, char ch) {
@@ -84,6 +86,10 @@ public class StorageBoxMenu extends Menu {
                 .stream()
                 .map(reward -> reward.getViewItem().createStack())
                 .collect(Collectors.toList()));
+
+        menuPattern.updateTurningButton(this,
+            this.page != 1,
+            Math.ceil((double) rewards.size() / countReward) >= page + 1);
     }
 
     @Override
@@ -93,13 +99,25 @@ public class StorageBoxMenu extends Menu {
             return;
         }
         String pattern = menuPattern.getPattern();
-        if (pattern.charAt(slotIndex) != '_') {
+        char c = pattern.charAt(slotIndex);
+        if (c != '_' && c != 'L' && c != 'R') {
+            return;
+        }
+
+        PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
+        List<Reward> rewards = playerDataManager.getPlayerData(uuid);
+
+        if (c == 'L' && this.page != 1) {
+            this.page--;
+            update();
+            return;
+        } else if (c == 'R' && Math.ceil((double) rewards.size() / countReward) >= page + 1) {
+            this.page++;
+            update();
             return;
         }
 
         int rewardIndex = getRewardIndex(slotIndex);
-        PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
-        List<Reward> rewards = playerDataManager.getPlayerData(uuid);
         if (rewardIndex >= rewards.size()) {
             return;
         }
