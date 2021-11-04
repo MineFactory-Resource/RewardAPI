@@ -1,5 +1,6 @@
 package net.teamuni.rewardapi.menu;
 
+import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,15 +56,30 @@ public class StorageBoxMenu extends Menu {
         menuPattern = new MenuPattern(pattern);
         countReward = countChar(pattern, '_');
 
-        Map<Character, SimpleItemStack> map2 = menuConfig.getValue(
+        Map<Character, SimpleItemStack> map = menuConfig.getValue(
             new TypeToken<Map<Character, SimpleItemStack>>() {},
             "storagebox", "items").orElse(Collections.emptyMap());
-        map2.entrySet().stream()
+        map.entrySet().stream()
             .filter(entry ->
                 entry.getKey() != ' ' && entry.getKey() != '_' &&
                 entry.getKey() != 'L' && entry.getKey() != 'R')
             .forEach(entry -> menuPattern.setItem(entry.getKey(),
                 entry.getValue().createItemStackSnapShot()));
+
+        List<ItemStackSnapshot> issList = Lists.newArrayListWithExpectedSize(4);
+        String[][] nodePath = new String[][] {
+            new String[] {"storagebox", "button", "left", "can"},
+            new String[] {"storagebox", "button", "left", "cant"},
+            new String[] {"storagebox", "button", "right", "can"},
+            new String[] {"storagebox", "button", "right", "cant"}
+        };
+        for (String[] node : nodePath) {
+            issList.add(menuConfig.getValue(
+                    new TypeToken<SimpleItemStack>() {}, node)
+                .orElse(SimpleItemStack.NONE)
+                .createItemStackSnapShot());
+        }
+        menuPattern.setTurningButtons(issList);
     }
 
     private static int countChar(String str, char ch) {
@@ -89,7 +105,7 @@ public class StorageBoxMenu extends Menu {
 
         menuPattern.updateTurningButton(this,
             this.page != 1,
-            Math.ceil((double) rewards.size() / countReward) >= page + 1);
+            Math.ceil((double) rewards.size() / countReward) >= this.page + 1);
     }
 
     @Override
@@ -109,43 +125,41 @@ public class StorageBoxMenu extends Menu {
 
         if (c == 'L' && this.page != 1) {
             this.page--;
-            update();
-            return;
-        } else if (c == 'R' && Math.ceil((double) rewards.size() / countReward) >= page + 1) {
+        } else if (c == 'R' && Math.ceil((double) rewards.size() / countReward) >= this.page + 1) {
             this.page++;
-            update();
-            return;
-        }
-
-        int rewardIndex = getRewardIndex(slotIndex);
-        if (rewardIndex >= rewards.size()) {
-            return;
-        }
-        Reward reward = rewards.get(rewardIndex);
-        if (reward.isItemReward()) {
-            ItemReward itemReward = (ItemReward) reward;
-            List<ItemStack> items = new ArrayList<>();
-            for (ItemStackSnapshot iss : itemReward.getRewardItems()) {
-                items.add(iss.createStack());
-            }
-            if (items.stream().allMatch(item ->
-                ((UserInventory<? extends User>) player.getInventory()).getMain().canFit(item))) {
-                for (ItemStack item : items) {
-                    player.getInventory().offer(item);
-                }
-            } else {
-                MessageStorage messageStorage = RewardAPI.getInstance().getMessageStorage();
-                player.sendMessage(messageStorage.getMessage("menu", "out_of_space"));
+        } else if (c == '_') {
+            int rewardIndex = getRewardIndex(slotIndex);
+            if (rewardIndex >= rewards.size()) {
                 return;
             }
-        } else {
-            CommandReward commandReward = (CommandReward) reward;
-            for (String command : commandReward.getCommands()) {
-                Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
+            Reward reward = rewards.get(rewardIndex);
+            if (reward.isItemReward()) {
+                ItemReward itemReward = (ItemReward) reward;
+                List<ItemStack> items = new ArrayList<>();
+                for (ItemStackSnapshot iss : itemReward.getRewardItems()) {
+                    items.add(iss.createStack());
+                }
+                if (items.stream().allMatch(item ->
+                    ((UserInventory<? extends User>) player.getInventory()).getMain().canFit(item))) {
+                    for (ItemStack item : items) {
+                        player.getInventory().offer(item);
+                    }
+                } else {
+                    MessageStorage messageStorage = RewardAPI.getInstance().getMessageStorage();
+                    player.sendMessage(messageStorage.getMessage("menu", "out_of_space"));
+                    return;
+                }
+            } else {
+                CommandReward commandReward = (CommandReward) reward;
+                for (String command : commandReward.getCommands()) {
+                    Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
+                }
             }
+            rewards.remove(rewardIndex);
+            // TODO 이펙트
+        } else {
+            return;
         }
-        rewards.remove(rewardIndex);
-        // TODO 이펙트
         Sponge.getScheduler().createTaskBuilder()
             .execute(this::update)
             .submit(RewardAPI.getInstance());

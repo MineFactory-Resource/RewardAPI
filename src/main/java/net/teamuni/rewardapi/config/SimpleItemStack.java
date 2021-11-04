@@ -1,5 +1,6 @@
 package net.teamuni.rewardapi.config;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -7,12 +8,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
 public class SimpleItemStack {
+
+    public static final SimpleItemStack NONE =
+        new SimpleItemStack(ItemTypes.AIR, 0, null, Collections.emptyList());
 
     @NonNull
     private final ItemType type;
