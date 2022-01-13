@@ -12,9 +12,9 @@ import net.teamuni.rewardapi.config.MessageStorage;
 import net.teamuni.rewardapi.config.SimpleItemStack;
 import net.teamuni.rewardapi.data.PlayerDataManager;
 import net.teamuni.rewardapi.database.Database;
-import net.teamuni.rewardapi.database.YamlDatabase;
+import net.teamuni.rewardapi.database.JsonDatabase;
+import net.teamuni.rewardapi.database.SQLDatabase;
 import net.teamuni.rewardapi.menu.StorageBoxMenu;
-import net.teamuni.rewardapi.serializer.ItemSerializer;
 import net.teamuni.rewardapi.serializer.RewardSerializer;
 import net.teamuni.rewardapi.serializer.SimpleItemSerializer;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
@@ -26,7 +26,6 @@ import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 
@@ -49,6 +48,7 @@ public class RewardAPI {
 
     private ConfigManager config;
     private ConfigManager menuConfig;
+    private ConfigManager databaseConfig;
     private MessageStorage messageStorage;
 
     public static RewardAPI getInstance() {
@@ -61,11 +61,11 @@ public class RewardAPI {
 
         TypeSerializerCollection.defaults()
             .register(TypeToken.of(SimpleItemStack.class), new SimpleItemSerializer())
-            .register(TypeToken.of(ItemStackSnapshot.class), new ItemSerializer())
             .register(TypeToken.of(Reward.class), new RewardSerializer());
 
         this.config = new ConfigManager("rewardapi.conf");
         this.menuConfig = new ConfigManager(this.config, "menu");
+        this.databaseConfig = new ConfigManager(this.config, "database");
         this.messageStorage = new MessageStorage(this.config, "message");
 
         StorageBoxMenu.init();
@@ -82,7 +82,12 @@ public class RewardAPI {
             .child(addCommandSpec, "add").executor(new RewardCommand())
             .build();
 
-        this.database = new YamlDatabase(instance, Paths.get("rewardapi"));
+        if (this.databaseConfig.getString("json", "type").equalsIgnoreCase("json")) {
+            this.database = new JsonDatabase(instance, Paths.get(
+                this.databaseConfig.getString("rewardapi/data", "Json", "datafolder")));
+        } else {
+            this.database = new SQLDatabase();
+        }
         this.playerDataManager = new PlayerDataManager(this);
         Sponge.getEventManager().registerListeners(this, this.playerDataManager);
         Sponge.getCommandManager().register(this, rewardCommandSpec, "rewardapi", "reward");

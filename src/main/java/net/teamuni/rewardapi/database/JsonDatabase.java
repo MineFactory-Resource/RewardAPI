@@ -10,22 +10,22 @@ import java.util.UUID;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.api.Reward;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class YamlDatabase implements Database {
+public class JsonDatabase implements Database {
 
     private final RewardAPI instance;
     private final Path dataFolder;
 
-    public YamlDatabase(RewardAPI instance, Path dataFolder) {
+    public JsonDatabase(RewardAPI instance, Path dataFolder) {
         this.instance = instance;
-        // TODO Config에서 데이터 폴더 설정 가져오기
-        this.dataFolder = dataFolder.toAbsolutePath().resolve("data");
+        this.dataFolder = dataFolder;
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public @NonNull Reward[] load(@NonNull UUID uuid) {
         Path dataPath = null;
@@ -35,7 +35,7 @@ public class YamlDatabase implements Database {
             instance.getLogger().error("Could not load data file. ("+uuid+")", e);
             return new Reward[0];
         }
-        ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader
+        ConfigurationLoader<ConfigurationNode> loader = GsonConfigurationLoader
             .builder()
             .setPath(dataPath)
             .build();
@@ -56,6 +56,7 @@ public class YamlDatabase implements Database {
         }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void save(@NonNull UUID uuid, @NonNull Reward[] rewards) {
         Path dataPath = null;
@@ -65,7 +66,7 @@ public class YamlDatabase implements Database {
             instance.getLogger().error("Could not save data file. ("+uuid+")", e);
             return;
         }
-        ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader
+        ConfigurationLoader<ConfigurationNode> loader = GsonConfigurationLoader
             .builder()
             .setPath(dataPath)
             .build();
@@ -85,7 +86,7 @@ public class YamlDatabase implements Database {
 
     private Path checkDataFile(UUID uuid) throws IOException {
         if (!Files.exists(dataFolder)) Files.createDirectories(dataFolder);
-        Path dataPath = dataFolder.resolve(uuid.toString()+".yml");
+        Path dataPath = dataFolder.resolve(uuid.toString()+".json");
         if (!Files.exists(dataPath)) {
             Files.createFile(dataPath);
         }

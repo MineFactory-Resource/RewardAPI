@@ -15,33 +15,37 @@ import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
 public class RewardSerializer implements TypeSerializer<Reward> {
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public @Nullable Reward deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException {
-        ItemStackSnapshot iss = value.getNode("viewItem").getValue(TypeToken.of(ItemStackSnapshot.class));
-
-        ConfigurationNode rewardNode = value.getNode("rewardItems");
+        ItemStackSnapshot viewItem = value.getValue(TypeToken.of(ItemStackSnapshot.class));
+        ConfigurationNode rewardNode = value.getNode("reward_items");
         if (!rewardNode.isVirtual()) {
             List<ItemStackSnapshot> items = rewardNode.getList(TypeToken.of(ItemStackSnapshot.class));
-            return new ItemReward(iss, items.toArray(new ItemStackSnapshot[0]));
+            return new ItemReward(viewItem, items.toArray(new ItemStackSnapshot[0]));
         } else {
             rewardNode = value.getNode("commands");
-            String[] cmds = rewardNode.getValue(TypeToken.of(String[].class));
-            return new CommandReward(iss, cmds);
+            String[] commands = rewardNode.getValue(TypeToken.of(String[].class));
+            return new CommandReward(viewItem, commands);
         }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void serialize(@NonNull TypeToken<?> type, @Nullable Reward obj, @NonNull ConfigurationNode value) throws ObjectMappingException {
         if (obj == null) {
             return;
         }
 
-        value.getNode("viewItem").setValue(TypeToken.of(ItemStackSnapshot.class), obj.getViewItem());
+        value.setValue(TypeToken.of(ItemStackSnapshot.class), obj.getViewItem());
+        if (value.getNode("UnsafeDamage").getInt(0) == 0) {
+            value.removeChild("UnsafeDamage");
+        }
 
         if (obj.isItemReward()) {
             ItemReward itemReward = (ItemReward) obj;
             List<ItemStackSnapshot> items = Arrays.asList(itemReward.getRewardItems());
-            value.getNode("rewardItems").setValue(new TypeToken<List<ItemStackSnapshot>>() {}, items);
+            value.getNode("reward_items").setValue(new TypeToken<List<ItemStackSnapshot>>() {}, items);
         } else {
             value.getNode("commands").setValue(TypeToken.of(String[].class), ((CommandReward) obj).getCommands());
         }
