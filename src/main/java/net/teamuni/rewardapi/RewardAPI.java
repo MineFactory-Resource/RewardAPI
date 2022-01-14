@@ -4,6 +4,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import net.teamuni.rewardapi.api.Reward;
 import net.teamuni.rewardapi.command.AddCommand;
 import net.teamuni.rewardapi.command.RewardCommand;
@@ -25,7 +26,7 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GameStoppingEvent;
+import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 
@@ -86,7 +87,18 @@ public class RewardAPI {
             this.database = new JsonDatabase(instance, Paths.get(
                 this.databaseConfig.getString("rewardapi/data", "Json", "datafolder")));
         } else {
-            this.database = new SQLDatabase();
+            String host = this.databaseConfig.getString("", "MySQL", "host");
+            int port = this.databaseConfig.getValue(Integer.TYPE, 3306, "MySQL", "port");
+            String database = this.databaseConfig.getString("", "MySQL", "database");
+            String tableName = this.databaseConfig.getString("", "MySQL", "tablename");
+            String parameters = this.databaseConfig.getString("", "MySQL", "parameters");
+            String userName = this.databaseConfig.getString("", "MySQL", "username");
+            String password = this.databaseConfig.getString("", "MySQL", "password");
+            try {
+                this.database = new SQLDatabase(this, host, port, database, tableName, parameters, userName, password);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         this.playerDataManager = new PlayerDataManager(this);
         Sponge.getEventManager().registerListeners(this, this.playerDataManager);
@@ -94,7 +106,7 @@ public class RewardAPI {
     }
 
     @Listener
-    public void onServerStop(GameStoppingEvent event) {
+    public void onServerStop(GameStoppingServerEvent event) {
         playerDataManager.unloadAllData();
     }
 
