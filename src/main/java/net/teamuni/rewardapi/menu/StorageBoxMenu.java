@@ -89,6 +89,9 @@ public class StorageBoxMenu extends Menu {
     public void update() {
         PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
         List<Reward> rewards = playerDataManager.getPlayerData(uuid);
+        if (rewards == null) {
+            return;
+        }
 
         int start = (page - 1) * countReward;
         int end = Math.min(page * countReward + 1, rewards.size());
@@ -122,6 +125,9 @@ public class StorageBoxMenu extends Menu {
 
         PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
         List<Reward> rewards = playerDataManager.getPlayerData(uuid);
+        if (rewards == null) {
+            return;
+        }
 
         if (c == 'L' && this.page != 1) {
             this.page--;
