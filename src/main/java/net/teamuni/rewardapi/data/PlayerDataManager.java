@@ -1,36 +1,46 @@
 package net.teamuni.rewardapi.data;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import net.teamuni.rewardapi.RewardAPI;
-import net.teamuni.rewardapi.api.Reward;
-import net.teamuni.rewardapi.database.Database;
+import net.teamuni.rewardapi.data.object.Reward;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
+import org.spongepowered.api.scheduler.Task;
 
-public class PlayerDataManager {
+public class PlayerDataManager implements Closeable {
 
     private final RewardAPI instance;
-    private final Map<UUID, List<Reward>> playerDataMap = new HashMap<>();
-    private final Map<UUID, List<Consumer<List<Reward>>>> loadingTask = new HashMap<>();
+    private final Map<UUID, PlayerData> playerDataMap = new HashMap<>();
+    private final Map<UUID, List<Consumer<PlayerData>>> loadingTask = new HashMap<>();
     private final SpongeExecutorService scheduler;
     private final ExecutorService singleThread;
 
-    public PlayerDataManager(RewardAPI instance) {
+    public PlayerDataManager(RewardAPI instance, int saveInterval) {
         this.instance = instance;
         this.scheduler = Sponge.getScheduler().createSyncExecutor(this.instance);
         this.singleThread = Executors.newSingleThreadExecutor();
+        Task.builder()
+            .name("RewardAPI - Store In Database")
+            .interval(saveInterval, TimeUnit.SECONDS)
+            .execute(this::saveAllData)
+            .submit(instance);
     }
 
     private void loadPlayerData(UUID uuid) {
@@ -40,16 +50,16 @@ public class PlayerDataManager {
 
         this.loadingTask.put(uuid, new ArrayList<>());
         CompletableFuture
-            .supplyAsync(() -> Arrays.asList(this.instance.getDatabase().load(uuid)), this.singleThread)
+            .supplyAsync(() -> new PlayerData(uuid, this.instance.getDatabase().load(uuid)), this.singleThread)
             .thenAcceptAsync((rewards) -> {
                 this.playerDataMap.put(uuid, rewards);
-                for (Consumer<List<Reward>> callback : loadingTask.remove(uuid)) {
+                for (Consumer<PlayerData> callback : loadingTask.remove(uuid)) {
                     callback.accept(rewards);
                 }
             }, this.scheduler);
     }
 
-    public void usePlayerData(UUID uuid, Consumer<List<Reward>> consumer) {
+    public void usePlayerData(UUID uuid, Consumer<PlayerData> consumer) {
         if (this.playerDataMap.containsKey(uuid)) {
             consumer.accept(this.playerDataMap.get(uuid));
             return;
@@ -68,7 +78,7 @@ public class PlayerDataManager {
         }
     }
 
-    public @Nullable List<Reward> getPlayerData(UUID uuid) {
+    public @Nullable PlayerData getPlayerData(UUID uuid) {
         return playerDataMap.get(uuid);
     }
 
@@ -76,39 +86,76 @@ public class PlayerDataManager {
         if (!playerDataMap.containsKey(uuid)) {
             return;
         }
-        Reward[] rewards = playerDataMap.get(uuid).toArray(new Reward[0]);
+        List<Reward> rewards = playerDataMap.get(uuid).getRewards();
         CompletableFuture
             .runAsync(() -> this.instance.getDatabase().save(uuid, rewards), this.singleThread);
     }
 
-    public void unloadPlayerData(UUID uuid) {
-        if (!playerDataMap.containsKey(uuid)) {
-            return;
-        }
-        savePlayerData(uuid);
-        playerDataMap.remove(uuid);
-    }
-
-    public void unloadAllData() {
+    private void saveAllData() {
         if (playerDataMap.isEmpty()) {
             return;
         }
-        Database database = instance.getDatabase();
-        for (Map.Entry<UUID, List<Reward>> entry : playerDataMap.entrySet()) {
-            database.save(entry.getKey(), entry.getValue().toArray(new Reward[0]));
+
+        for (PlayerData playerData : playerDataMap.values()) {
+            if (playerData.isChanged) {
+                savePlayerData(playerData.uuid);
+            }
         }
+    }
+
+    private void unloadAllData() {
+        if (playerDataMap.isEmpty()) {
+            return;
+        }
+        saveAllData();
         playerDataMap.clear();
+    }
+
+    @Override
+    public void close() {
+        unloadAllData();
+        singleThread.shutdown();
+        try {
+            if (!singleThread.awaitTermination(30, TimeUnit.SECONDS)) {
+                singleThread.shutdownNow();
+            }
+        } catch (InterruptedException ignored) {
+        }
+    }
+
+    public static final class PlayerData {
+
+        private final UUID uuid;
+        private final ArrayList<Reward> rewards;
+        private boolean isChanged = false;
+
+        private PlayerData(UUID uuid, List<Reward> rewards) {
+            this.uuid = uuid;
+            this.rewards = new ArrayList<>(rewards);
+        }
+
+        public UUID getUuid() {
+            return uuid;
+        }
+
+        public List<Reward> getRewards() {
+            return Collections.unmodifiableList(rewards);
+        }
+
+        public void addReward(Reward reward) {
+            this.isChanged = true;
+            rewards.add(reward);
+        }
+
+        public Reward removeReward(int index) {
+            this.isChanged = true;
+            return rewards.remove(index);
+        }
     }
 
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
         UUID uuid = event.getTargetEntity().getUniqueId();
         loadPlayerData(uuid);
-    }
-
-    @Listener
-    public void onPlayerLeft(ClientConnectionEvent.Disconnect event) {
-        UUID uuid = event.getTargetEntity().getUniqueId();
-        unloadPlayerData(uuid);
     }
 }

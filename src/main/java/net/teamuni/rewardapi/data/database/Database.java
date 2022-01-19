@@ -1,4 +1,4 @@
-package net.teamuni.rewardapi.database;
+package net.teamuni.rewardapi.data.database;
 
 import com.google.common.reflect.TypeToken;
 import java.io.BufferedReader;
@@ -7,11 +7,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import net.teamuni.rewardapi.RewardAPI;
-import net.teamuni.rewardapi.api.Reward;
+import net.teamuni.rewardapi.data.object.Reward;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -27,17 +29,17 @@ public abstract class Database {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    public @NonNull Reward[] load(@NonNull UUID uuid) {
+    public @NonNull List<Reward> load(@NonNull UUID uuid) {
         String json;
         try {
             json = loadJson(uuid);
         } catch (IOException | SQLException e) {
             this.instance.getLogger().error("Failed to load data. ("+uuid+")", e);
-            return new Reward[0];
+            return Collections.emptyList();
         }
 
         if (json.isEmpty()) {
-            return new Reward[0];
+            return Collections.emptyList();
         }
 
         ConfigurationLoader<ConfigurationNode> loader = GsonConfigurationLoader
@@ -46,18 +48,17 @@ public abstract class Database {
             .build();
         try {
             ConfigurationNode node = loader.load();
-            List<Reward> rewardList = node.getNode("rewards").getList(TypeToken.of(Reward.class));
-            return rewardList.toArray(new Reward[0]);
+            return node.getNode("rewards").getList(TypeToken.of(Reward.class));
         } catch (ObjectMappingException | IOException e) {
             this.instance.getLogger().error("Failed to parse json data. ("+uuid+")", e);
-            return new Reward[0];
+            return Collections.emptyList();
         }
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    public void save(@NonNull UUID uuid, @NonNull Reward[] rewards) {
+    public void save(@NonNull UUID uuid, @NonNull List<Reward> rewards) {
         String json;
-        if (rewards.length > 0) {
+        if (rewards.size() > 0) {
             StringWriter sw = new StringWriter();
             ConfigurationLoader<ConfigurationNode> loader = GsonConfigurationLoader
                 .builder()
@@ -65,7 +66,7 @@ public abstract class Database {
                 .build();
             ConfigurationNode node = loader.createEmptyNode();
             try {
-                node.getNode("rewards").setValue(new TypeToken<List<Reward>>() {}, Arrays.asList(rewards));
+                node.getNode("rewards").setValue(new TypeToken<List<Reward>>() {}, rewards);
                 loader.save(node);
             } catch (IOException | ObjectMappingException e) {
                 this.instance.getLogger().error("Failed to parse json data. (" + uuid + ")", e);

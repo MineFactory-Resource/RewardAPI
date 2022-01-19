@@ -9,9 +9,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import net.teamuni.rewardapi.RewardAPI;
-import net.teamuni.rewardapi.api.CommandReward;
-import net.teamuni.rewardapi.api.ItemReward;
-import net.teamuni.rewardapi.api.Reward;
+import net.teamuni.rewardapi.data.PlayerDataManager.PlayerData;
+import net.teamuni.rewardapi.data.object.CommandReward;
+import net.teamuni.rewardapi.data.object.ItemReward;
+import net.teamuni.rewardapi.data.object.Reward;
 import net.teamuni.rewardapi.config.ConfigManager;
 import net.teamuni.rewardapi.config.MessageStorage;
 import net.teamuni.rewardapi.config.SimpleItemStack;
@@ -88,10 +89,11 @@ public class StorageBoxMenu extends Menu {
 
     public void update() {
         PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
-        List<Reward> rewards = playerDataManager.getPlayerData(uuid);
-        if (rewards == null) {
+        PlayerData playerData = playerDataManager.getPlayerData(uuid);
+        if (playerData == null) {
             return;
         }
+        List<Reward> rewards = playerData.getRewards();
 
         int start = (page - 1) * countReward;
         int end = Math.min(page * countReward + 1, rewards.size());
@@ -124,10 +126,11 @@ public class StorageBoxMenu extends Menu {
         }
 
         PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
-        List<Reward> rewards = playerDataManager.getPlayerData(uuid);
-        if (rewards == null) {
+        PlayerData playerData = playerDataManager.getPlayerData(uuid);
+        if (playerData == null) {
             return;
         }
+        List<Reward> rewards = playerData.getRewards();
 
         if (c == 'L' && this.page != 1) {
             this.page--;
@@ -161,7 +164,7 @@ public class StorageBoxMenu extends Menu {
                     Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
                 }
             }
-            rewards.remove(rewardIndex);
+            playerData.removeReward(rewardIndex);
             // TODO 이펙트
         } else {
             return;

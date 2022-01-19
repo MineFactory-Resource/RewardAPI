@@ -1,4 +1,4 @@
-package net.teamuni.rewardapi.database;
+package net.teamuni.rewardapi.data.database;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
