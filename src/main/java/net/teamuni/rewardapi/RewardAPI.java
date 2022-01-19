@@ -5,16 +5,16 @@ import com.google.inject.Inject;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import net.teamuni.rewardapi.api.Reward;
+import net.teamuni.rewardapi.data.object.Reward;
 import net.teamuni.rewardapi.command.AddCommand;
 import net.teamuni.rewardapi.command.RewardCommand;
 import net.teamuni.rewardapi.config.ConfigManager;
 import net.teamuni.rewardapi.config.MessageStorage;
 import net.teamuni.rewardapi.config.SimpleItemStack;
 import net.teamuni.rewardapi.data.PlayerDataManager;
-import net.teamuni.rewardapi.database.Database;
-import net.teamuni.rewardapi.database.JsonDatabase;
-import net.teamuni.rewardapi.database.SQLDatabase;
+import net.teamuni.rewardapi.data.database.Database;
+import net.teamuni.rewardapi.data.database.JsonDatabase;
+import net.teamuni.rewardapi.data.database.SQLDatabase;
 import net.teamuni.rewardapi.menu.StorageBoxMenu;
 import net.teamuni.rewardapi.serializer.RewardSerializer;
 import net.teamuni.rewardapi.serializer.SimpleItemSerializer;
@@ -100,14 +100,15 @@ public class RewardAPI {
                 e.printStackTrace();
             }
         }
-        this.playerDataManager = new PlayerDataManager(this);
+        int saveInterval = this.databaseConfig.getValue(Integer.TYPE, 300, "save-interval");
+        this.playerDataManager = new PlayerDataManager(this, saveInterval);
         Sponge.getEventManager().registerListeners(this, this.playerDataManager);
         Sponge.getCommandManager().register(this, rewardCommandSpec, "rewardapi", "reward");
     }
 
     @Listener
     public void onServerStop(GameStoppingServerEvent event) {
-        playerDataManager.unloadAllData();
+        playerDataManager.close();
     }
 
     public Logger getLogger() {

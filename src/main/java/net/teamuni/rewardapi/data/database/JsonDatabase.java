@@ -1,4 +1,4 @@
-package net.teamuni.rewardapi.database;
+package net.teamuni.rewardapi.data.database;
 
 import static java.nio.charset.StandardCharsets.*;
 

@@ -1,4 +1,4 @@
-package net.teamuni.rewardapi.api;
+package net.teamuni.rewardapi.data.object;
 
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 

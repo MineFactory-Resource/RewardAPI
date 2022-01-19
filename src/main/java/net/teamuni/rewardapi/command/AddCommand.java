@@ -1,7 +1,7 @@
 package net.teamuni.rewardapi.command;
 
 import java.util.Optional;
-import net.teamuni.rewardapi.api.CommandReward;
+import net.teamuni.rewardapi.data.object.CommandReward;
 import net.teamuni.rewardapi.api.StorageBoxAPI;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
