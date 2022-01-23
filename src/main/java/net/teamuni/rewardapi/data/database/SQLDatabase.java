@@ -1,16 +1,15 @@
 package net.teamuni.rewardapi.data.database;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Optional;
 import java.util.UUID;
 import javax.sql.DataSource;
 import net.teamuni.rewardapi.RewardAPI;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.service.sql.SqlService;
 
 public class SQLDatabase extends Database {
 
@@ -24,21 +23,17 @@ public class SQLDatabase extends Database {
         throws SQLException {
         super(instance);
 
-        Optional<SqlService> optional = Sponge.getServiceManager().provide(SqlService.class);
-        if (!optional.isPresent()) {
-            throw new RuntimeException("Failed to retrieve SqlService.");
-        }
-
-        StringBuilder sb = new StringBuilder("jdbc:mysql://").append(userName);
-        if (!password.isEmpty()) {
-            sb.append(":").append(password);
-        }
-        sb.append("@").append(host).append(":").append(port).append("/").append(database);
+        HikariConfig config = new HikariConfig();
+        config.setUsername(userName);
+        config.setPassword(password);
+        StringBuilder sb = new StringBuilder("jdbc:mysql://")
+            .append(host).append(":").append(port).append("/").append(database);
         if (!parameters.isEmpty()) {
             sb.append(parameters);
         }
+        config.setJdbcUrl(sb.toString());
 
-        this.sql = optional.get().getDataSource(sb.toString());
+        this.sql = new HikariDataSource(config);
         this.tableName = tableName;
 
         this.selectStatement = "SELECT reward FROM " + tableName + " WHERE uuid = '%s';";
