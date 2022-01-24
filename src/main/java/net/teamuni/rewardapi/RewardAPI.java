@@ -60,10 +60,6 @@ public class RewardAPI {
     public void onServerStart(GameInitializationEvent event) {
         instance = this;
 
-        TypeSerializerCollection.defaults()
-            .register(TypeToken.of(SimpleItemStack.class), new SimpleItemSerializer())
-            .register(TypeToken.of(Reward.class), new RewardSerializer());
-
         this.config = new ConfigManager("rewardapi.conf");
         this.menuConfig = new ConfigManager(this.config, "menu");
         this.databaseConfig = new ConfigManager(this.config, "database");

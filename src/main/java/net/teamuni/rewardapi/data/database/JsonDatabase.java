@@ -30,7 +30,7 @@ public class JsonDatabase extends Database {
 
     @Override
     protected void saveJson(@NonNull UUID uuid, @NonNull String json) throws IOException {
-        Files.write(checkDataFile(uuid), json.getBytes(UTF_8));
+        Files.writeString(checkDataFile(uuid), json, UTF_8);
     }
 
     private Path checkDataFile(UUID uuid) throws IOException {
