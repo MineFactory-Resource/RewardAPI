@@ -2,13 +2,10 @@ package net.teamuni.rewardapi.data;
 
 import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -17,30 +14,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.data.object.Reward;
+import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.network.ClientConnectionEvent;
-import org.spongepowered.api.scheduler.SpongeExecutorService;
-import org.spongepowered.api.scheduler.Task;
 
-public class PlayerDataManager implements Closeable {
+public class PlayerDataManager implements Listener, Closeable {
 
     private final RewardAPI instance;
     private final Map<UUID, PlayerData> playerDataMap = new HashMap<>();
     private final Map<UUID, List<Consumer<PlayerData>>> loadingTask = new HashMap<>();
-    private final SpongeExecutorService scheduler;
     private final ExecutorService singleThread;
 
     public PlayerDataManager(RewardAPI instance, int saveInterval) {
         this.instance = instance;
-        this.scheduler = Sponge.getScheduler().createSyncExecutor(this.instance);
         this.singleThread = Executors.newSingleThreadExecutor();
-        Task.builder()
-            .name("RewardAPI - Store In Database")
-            .interval(saveInterval, TimeUnit.SECONDS)
-            .execute(this::saveAllData)
-            .submit(instance);
+        Bukkit.getScheduler().runTaskTimer(instance, this::saveAllData, saveInterval* 20L, saveInterval * 20L);
     }
 
     private void loadPlayerData(UUID uuid) {
@@ -50,13 +40,15 @@ public class PlayerDataManager implements Closeable {
 
         this.loadingTask.put(uuid, new ArrayList<>());
         CompletableFuture
-            .supplyAsync(() -> new PlayerData(uuid, this.instance.getDatabase().load(uuid)), this.singleThread)
-            .thenAcceptAsync((rewards) -> {
-                this.playerDataMap.put(uuid, rewards);
-                for (Consumer<PlayerData> callback : loadingTask.remove(uuid)) {
-                    callback.accept(rewards);
-                }
-            }, this.scheduler);
+            .runAsync(() -> {
+                PlayerData playerData = new PlayerData(uuid, this.instance.getDatabase().load(uuid));
+                Bukkit.getScheduler().runTask(this.instance, () -> {
+                    this.playerDataMap.put(uuid, playerData);
+                    for (Consumer<PlayerData> callback : loadingTask.remove(uuid)) {
+                        callback.accept(playerData);
+                    }
+                });
+            }, this.singleThread);
     }
 
     public void usePlayerData(UUID uuid, Consumer<PlayerData> consumer) {
@@ -153,9 +145,9 @@ public class PlayerDataManager implements Closeable {
         }
     }
 
-    @Listener
-    public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        UUID uuid = event.getTargetEntity().getUniqueId();
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        UUID uuid = event.getPlayer().getUniqueId();
         loadPlayerData(uuid);
     }
 }

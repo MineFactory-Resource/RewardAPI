@@ -1,0 +1,58 @@
+Menu:
+    StorageBox:
+      title: '&6보관함'
+      rows: 6
+    # ' ' (Spacebar) is empty slot
+    # '_' (Underbar) is reward slot
+    # 'L' is the slot that turns the page to the LEFT.
+    # 'R' is the slot that turns the page to the RIGHT.
+    Pattern:
+      - 'AAAABAAAA'
+      - '_________',
+      - '_________',
+      - '_________',
+      - '_________',
+      - 'LAAAAAAAR'
+    Items:
+      A:
+        type: 'minecraft:stained_glass_pane'
+        data: 10
+        name: ""
+      B:
+        type: 'minecraft:sign'
+    Buttons:
+      Left:
+        Can:
+          type: 'minecraft:stained_glass_pane'
+          name: '왼쪽으로 넘기기'
+        Cant:
+          type: 'minecraft:stained_glass_pane'
+          data: 10
+          name: ""
+      Right:
+        Can:
+          type: 'minecraft:stained_glass_pane'
+          name: '오른쪽으로 넘기기'
+        Cant:
+          type: 'minecraft:stained_glass_pane'
+          data: 10
+          name: ""
+
+Message:
+  Menu:
+    out_of_space: '&c공간이 부족합니다.'
+
+Database:
+  save-interval: 300
+  # Json or Mysql
+  type: Json
+  Json:
+    datafolder: './plugins/RewardAPI/data'
+  MySQL:
+    host: localhost
+    port: 3306
+    database: minecraft
+    tablename: rewardapi_rewards
+    parameters: '?characterEncoding=utf8'
+    username: root
+    password: password

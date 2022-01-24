@@ -1,49 +1,23 @@
 package net.teamuni.rewardapi;
 
-import com.google.common.reflect.TypeToken;
-import com.google.inject.Inject;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import net.teamuni.rewardapi.data.object.Reward;
 import net.teamuni.rewardapi.command.AddCommand;
 import net.teamuni.rewardapi.command.RewardCommand;
 import net.teamuni.rewardapi.config.ConfigManager;
 import net.teamuni.rewardapi.config.MessageStorage;
-import net.teamuni.rewardapi.config.SimpleItemStack;
 import net.teamuni.rewardapi.data.PlayerDataManager;
 import net.teamuni.rewardapi.data.database.Database;
 import net.teamuni.rewardapi.data.database.JsonDatabase;
 import net.teamuni.rewardapi.data.database.SQLDatabase;
 import net.teamuni.rewardapi.menu.StorageBoxMenu;
-import net.teamuni.rewardapi.serializer.RewardSerializer;
-import net.teamuni.rewardapi.serializer.SimpleItemSerializer;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
-import org.slf4j.Logger;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.spec.CommandSpec;
-import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
-import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.text.Text;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
 
-@Plugin(
-    id = "rewardapi",
-    name = "RewardAPI",
-    description = "RewardAPI pluigin"
-)
-public class RewardAPI {
+public class RewardAPI extends JavaPlugin {
 
     private static RewardAPI instance;
-    @Inject
-    private Logger logger;
 
-    @Inject
-    @ConfigDir(sharedRoot = true)
-    private Path configDir;
     private Database database;
     private PlayerDataManager playerDataManager;
 
@@ -56,14 +30,14 @@ public class RewardAPI {
         return instance;
     }
 
-    @Listener
-    public void onServerStart(GameInitializationEvent event) {
+    @Override
+    public void onEnable() {
         instance = this;
 
-        this.config = new ConfigManager("rewardapi.conf");
-        this.menuConfig = new ConfigManager(this.config, "menu");
-        this.databaseConfig = new ConfigManager(this.config, "database");
-        this.messageStorage = new MessageStorage(this.config, "message");
+        this.config = new ConfigManager();
+        this.menuConfig = new ConfigManager(this.config, "Menu");
+        this.databaseConfig = new ConfigManager(this.config, "Database");
+        this.messageStorage = new MessageStorage(this.config, "Message");
 
         StorageBoxMenu.init();
 
@@ -81,15 +55,15 @@ public class RewardAPI {
 
         if (this.databaseConfig.getString("json", "type").equalsIgnoreCase("json")) {
             this.database = new JsonDatabase(instance, Paths.get(
-                this.databaseConfig.getString("rewardapi/data", "Json", "datafolder")));
+                this.databaseConfig.getString("./plugins/RewardAPI/data", "Json.datafolder")));
         } else {
-            String host = this.databaseConfig.getString("", "MySQL", "host");
-            int port = this.databaseConfig.getValue(Integer.TYPE, 3306, "MySQL", "port");
-            String database = this.databaseConfig.getString("", "MySQL", "database");
-            String tableName = this.databaseConfig.getString("", "MySQL", "tablename");
-            String parameters = this.databaseConfig.getString("", "MySQL", "parameters");
-            String userName = this.databaseConfig.getString("", "MySQL", "username");
-            String password = this.databaseConfig.getString("", "MySQL", "password");
+            String host = this.databaseConfig.getString("", "MySQL.host");
+            int port = this.databaseConfig.getValue(Integer.TYPE, 3306, "MySQL.port");
+            String database = this.databaseConfig.getString("", "MySQL.database");
+            String tableName = this.databaseConfig.getString("", "MySQL.tablename");
+            String parameters = this.databaseConfig.getString("", "MySQL.parameters");
+            String userName = this.databaseConfig.getString("", "MySQL.username");
+            String password = this.databaseConfig.getString("", "MySQL.password");
             try {
                 this.database = new SQLDatabase(this, host, port, database, tableName, parameters, userName, password);
             } catch (SQLException e) {
@@ -98,22 +72,15 @@ public class RewardAPI {
         }
         int saveInterval = this.databaseConfig.getValue(Integer.TYPE, 300, "save-interval");
         this.playerDataManager = new PlayerDataManager(this, saveInterval);
-        Sponge.getEventManager().registerListeners(this, this.playerDataManager);
+        Bukkit.getPluginManager().registerEvents(this.playerDataManager, this);
         Sponge.getCommandManager().register(this, rewardCommandSpec, "rewardapi", "reward");
     }
 
-    @Listener
-    public void onServerStop(GameStoppingServerEvent event) {
+    @Override
+    public void onDisable() {
         playerDataManager.close();
     }
 
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public Path getConfigDir() {
-        return configDir;
-    }
 
     public Database getDatabase() {
         return database;
@@ -121,10 +88,6 @@ public class RewardAPI {
 
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
-    }
-
-    public ConfigManager getConfig() {
-        return config;
     }
 
     public ConfigManager getMenuConfig() {
