@@ -1,19 +1,19 @@
 package net.teamuni.rewardapi.config;
 
-import org.spongepowered.api.text.serializer.TextSerializers;
-import org.spongepowered.api.text.Text;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 public class MessageStorage extends ConfigManager {
 
-    public MessageStorage(ConfigManager superConfig, String... startNode) {
-        super(superConfig, startNode);
+    public MessageStorage(ConfigManager superConfig, String startPath) {
+        super(superConfig, startPath);
     }
 
-    public String getRawMessage(String... key) {
+    public String getRawMessage(String key) {
         return getValue(String.class, "Not message loaded: " + String.join(".", key), key);
     }
 
-    public Text getMessage(String... key) {
-        return TextSerializers.FORMATTING_CODE.deserialize(getRawMessage(key));
+    public TextComponent getMessage(String key) {
+        return Component.text(getRawMessage(key));
     }
 }
