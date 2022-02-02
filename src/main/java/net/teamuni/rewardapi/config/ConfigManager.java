@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
@@ -72,6 +73,7 @@ public class ConfigManager {
         if (material == null) {
             material = Material.matchMaterial(type, true);
             if (material == null) {
+                RewardAPI.getInstance().getLogger().log(Level.WARNING, "'%s' 이라는 아이템을 찾지 못했습니다.", type);
                 return Optional.empty();
             }
         }
