@@ -2,6 +2,7 @@ package net.teamuni.rewardapi.config;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import org.bukkit.ChatColor;
 
 public class MessageStorage extends ConfigManager {
 
@@ -14,6 +15,6 @@ public class MessageStorage extends ConfigManager {
     }
 
     public TextComponent getMessage(String key) {
-        return Component.text(getRawMessage(key));
+        return Component.text(ChatColor.translateAlternateColorCodes('&', getRawMessage(key)));
     }
 }

@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.teamuni.rewardapi.RewardAPI;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -87,10 +88,11 @@ public class ConfigManager {
         }
         ItemMeta im = is.getItemMeta();
         if (name != null) {
-            im.displayName(Component.text(name));
+            im.displayName(Component.text(ChatColor.translateAlternateColorCodes('&', name)));
         }
         if (!lore.isEmpty()) {
-            im.lore(lore.stream().map(Component::text).collect(Collectors.toList()));
+            im.lore(lore.stream().map(s -> Component.text(ChatColor.translateAlternateColorCodes('&', s)))
+                .collect(Collectors.toList()));
         }
         is.setItemMeta(im);
         return Optional.of(is);

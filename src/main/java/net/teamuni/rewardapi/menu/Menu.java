@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.WeakHashMap;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,7 +26,8 @@ public abstract class Menu {
 
     protected Menu(@NonNull String title, int rows) {
         checkArgument(rows >= 1 && rows <= 6, "Rows parameter must be between 1 and 6.", rows);
-        this.inv = Bukkit.createInventory(null, rows * 9, Component.text(title));
+        this.inv = Bukkit.createInventory(null, rows * 9,
+            Component.text(ChatColor.translateAlternateColorCodes('&', title)));
     }
 
     public void setItem(int slot, @Nullable ItemStack item) {
