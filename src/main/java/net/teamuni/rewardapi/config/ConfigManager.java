@@ -1,11 +1,19 @@
 package net.teamuni.rewardapi.config;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -16,6 +24,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 
 public class ConfigManager {
@@ -89,6 +98,21 @@ public class ConfigManager {
             }
         }
         ItemMeta im = is.getItemMeta();
+        if (im instanceof SkullMeta skullMeta) {
+            String headName = section.getString("head-name");
+            if (headName != null) {
+                skullMeta.setOwner(headName);
+            } else {
+                String headCustom = section.getString("head-texture");
+                if (headCustom != null) {
+                    try {
+                        setCustomSkull(skullMeta, headCustom);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        RewardAPI.getInstance().getLogger().log(Level.WARNING, "커스텀 머리를 불러오는데 실패하였습니다.", e);
+                    }
+                }
+            }
+        }
         if (name != null) {
             im.displayName(Component.text(ChatColor.translateAlternateColorCodes('&', name)));
         }
@@ -117,5 +141,19 @@ public class ConfigManager {
     }
     public String getString(String def, String path) {
         return getValue(String.class, path).orElse(def);
+    }
+
+    public static void setCustomSkull(SkullMeta itemMeta, String value)
+        throws NoSuchFieldException, IllegalAccessException {
+        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+        PropertyMap propertyMap = profile.getProperties();
+        byte[] encodedData = Base64.getEncoder().encode(
+            String.format("{textures:{SKIN:{url:\"https://textures.minecraft.net/texture/%s\"}}}", value)
+                .getBytes(UTF_8));
+        propertyMap.put("textures", new Property("textures", new String(encodedData)));
+
+        Field profileField = itemMeta.getClass().getDeclaredField("profile");
+        profileField.setAccessible(true);
+        profileField.set(itemMeta, profile);
     }
 }
