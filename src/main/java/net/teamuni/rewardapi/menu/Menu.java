@@ -2,40 +2,36 @@ package net.teamuni.rewardapi.menu;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import net.teamuni.rewardapi.RewardAPI;
+import java.util.WeakHashMap;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
-import org.spongepowered.api.item.inventory.Inventory;
-import org.spongepowered.api.item.inventory.InventoryArchetypes;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
-import org.spongepowered.api.item.inventory.Slot;
-import org.spongepowered.api.item.inventory.property.AbstractInventoryProperty;
-import org.spongepowered.api.item.inventory.property.InventoryDimension;
-import org.spongepowered.api.item.inventory.property.InventoryTitle;
-import org.spongepowered.api.item.inventory.property.SlotIndex;
-import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
-import org.spongepowered.api.item.inventory.transaction.SlotTransaction;
-import org.spongepowered.api.text.serializer.TextSerializers;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public abstract class Menu {
+
+    private static final WeakHashMap<Player, Menu> menus = new WeakHashMap<>();
 
     protected final Inventory inv;
 
     protected Menu(@NonNull String title, int rows) {
         checkArgument(rows >= 1 && rows <= 6, "Rows parameter must be between 1 and 6.", rows);
-        this.inv = Inventory.builder()
-            .of(InventoryArchetypes.DOUBLE_CHEST)
-            .property(InventoryTitle.PROPERTY_NAME,
-                InventoryTitle.of(TextSerializers.FORMATTING_CODE.deserialize(title)))
-            .property(InventoryDimension.PROPERTY_NAME, InventoryDimension.of(9, rows))
-            .listener(ClickInventoryEvent.class, this::onClick)
-            .build(RewardAPI.getInstance());
+        this.inv = Bukkit.createInventory(null, rows * 9,
+            Component.text(ChatColor.translateAlternateColorCodes('&', title)));
     }
 
-    public void setItem(int slot, @NonNull ItemStack item) {
-        inv.query(QueryOperationTypes.INVENTORY_PROPERTY.of(SlotIndex.of(slot))).set(item);
+    public void setItem(int slot, @Nullable ItemStack item) {
+        inv.setItem(slot, item);
     }
 
     public void applyPattern(@NonNull MenuPattern p) {
@@ -43,31 +39,39 @@ public abstract class Menu {
     }
 
     public void open(Player player) {
+        menus.put(player, this);
         player.openInventory(inv);
     }
 
-    private void onClick(ClickInventoryEvent event) {
-        if (event.getTransactions().isEmpty()) {
+    private void onClick(InventoryClickEvent event) {
+        int slot = event.getRawSlot();
+        if (slot < 0 || slot >= inv.getSize()) {
             return;
         }
-
-        SlotTransaction st = event.getTransactions().get(0);
-        int slot = st.getSlot().getInventoryProperty(SlotIndex.class)
-            .map(AbstractInventoryProperty::getValue).orElse(-1);
-
-        if (slot < 0 || slot >= inv.capacity()) {
-            return;
-        }
-
         event.setCancelled(true);
-        event.getCause().first(Player.class).ifPresent(p -> {
-            onClick(p, slot, st.getSlot(), st.getOriginal(), ClickType.fromEvent(event));
-        });
+        onClick((Player) event.getWhoClicked(), event.getSlot(), event.getCurrentItem(), event.getAction());
     }
 
-    public int getCapacity() {
-        return inv.capacity();
-    }
+    protected abstract void onClick(Player player, int slotIndex, ItemStack clickItem, InventoryAction clickType);
 
-    protected abstract void onClick(Player player, int slotIndex, Slot slot, ItemStackSnapshot clickItem, ClickType clickType);
+    public static class InventoryEventListener implements Listener {
+        @EventHandler
+        public void onClick(InventoryClickEvent event) {
+            if (event.getClickedInventory() == null || event.getClickedInventory().getType() != InventoryType.CHEST) {
+                return;
+            }
+            Player player = (Player) event.getWhoClicked();
+            if (menus.containsKey(player)) {
+                Menu menu = menus.get(player);
+                if (menu.inv.equals(event.getClickedInventory())) {
+                    menu.onClick(event);
+                }
+            }
+        }
+
+        @EventHandler
+        public void onClose(InventoryCloseEvent event) {
+            menus.remove((Player) event.getPlayer());
+        }
+    }
 }

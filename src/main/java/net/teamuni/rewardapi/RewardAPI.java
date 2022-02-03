@@ -10,6 +10,7 @@ import net.teamuni.rewardapi.data.PlayerDataManager;
 import net.teamuni.rewardapi.data.database.Database;
 import net.teamuni.rewardapi.data.database.JsonDatabase;
 import net.teamuni.rewardapi.data.database.SQLDatabase;
+import net.teamuni.rewardapi.menu.Menu.InventoryEventListener;
 import net.teamuni.rewardapi.menu.StorageBoxMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -39,6 +40,7 @@ public class RewardAPI extends JavaPlugin {
         this.databaseConfig = new ConfigManager(this.config, "Database");
         this.messageStorage = new MessageStorage(this.config, "Message");
 
+        Bukkit.getPluginManager().registerEvents(new InventoryEventListener(), this);
         StorageBoxMenu.init();
 
         CommandSpec addCommandSpec = CommandSpec.builder()
