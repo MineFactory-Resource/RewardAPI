@@ -1,16 +1,16 @@
 package net.teamuni.rewardapi.data.object;
 
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.bukkit.inventory.ItemStack;
 
 public abstract class Reward {
 
-    private final ItemStackSnapshot viewItem;
+    private final ItemStack viewItem;
 
-    protected Reward(ItemStackSnapshot viewItem) {
+    protected Reward(ItemStack viewItem) {
         this.viewItem = viewItem;
     }
 
-    public ItemStackSnapshot getViewItem() {
+    public ItemStack getViewItem() {
         return viewItem;
     }
 

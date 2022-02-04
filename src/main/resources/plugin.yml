@@ -1,0 +1,10 @@
+name: RewardAPI
+version: '${version}'
+main: net.teamuni.rewardapi.RewardAPI
+api-version: 1.18
+libraries:
+  - com.zaxxer:HikariCP:5.0.1
+
+commands:
+  rewardapi:
+    aliases: [reward]

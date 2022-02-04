@@ -1,6 +1,6 @@
 package net.teamuni.rewardapi.data.database;
 
-import static java.nio.charset.StandardCharsets.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,11 +30,13 @@ public class JsonDatabase extends Database {
 
     @Override
     protected void saveJson(@NonNull UUID uuid, @NonNull String json) throws IOException {
-        Files.write(checkDataFile(uuid), json.getBytes(UTF_8));
+        Files.writeString(checkDataFile(uuid), json, UTF_8);
     }
 
     private Path checkDataFile(UUID uuid) throws IOException {
-        if (!Files.exists(dataFolder)) Files.createDirectories(dataFolder);
+        if (!Files.exists(dataFolder)) {
+            Files.createDirectories(dataFolder);
+        }
         Path dataPath = dataFolder.resolve(uuid + ".json");
         if (!Files.exists(dataPath)) {
             Files.createFile(dataPath);

@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -39,16 +38,15 @@ public class PlayerDataManager implements Listener, Closeable {
         }
 
         this.loadingTask.put(uuid, new ArrayList<>());
-        CompletableFuture
-            .runAsync(() -> {
-                PlayerData playerData = new PlayerData(uuid, this.instance.getDatabase().load(uuid));
-                Bukkit.getScheduler().runTask(this.instance, () -> {
-                    this.playerDataMap.put(uuid, playerData);
-                    for (Consumer<PlayerData> callback : loadingTask.remove(uuid)) {
-                        callback.accept(playerData);
-                    }
-                });
-            }, this.singleThread);
+        this.singleThread.execute(() -> {
+            PlayerData playerData = new PlayerData(uuid, this.instance.getDatabase().load(uuid));
+            Bukkit.getScheduler().runTask(this.instance, () -> {
+                this.playerDataMap.put(uuid, playerData);
+                for (Consumer<PlayerData> callback : loadingTask.remove(uuid)) {
+                    callback.accept(playerData);
+                }
+            });
+        });
     }
 
     public void usePlayerData(UUID uuid, Consumer<PlayerData> consumer) {
@@ -79,8 +77,7 @@ public class PlayerDataManager implements Listener, Closeable {
             return;
         }
         List<Reward> rewards = playerDataMap.get(uuid).getRewards();
-        CompletableFuture
-            .runAsync(() -> this.instance.getDatabase().save(uuid, rewards), this.singleThread);
+        this.singleThread.execute(() -> instance.getDatabase().save(uuid, rewards));
     }
 
     private void saveAllData() {
@@ -115,6 +112,12 @@ public class PlayerDataManager implements Listener, Closeable {
         }
     }
 
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        UUID uuid = event.getPlayer().getUniqueId();
+        loadPlayerData(uuid);
+    }
+
     public static final class PlayerData {
 
         private final UUID uuid;
@@ -143,11 +146,5 @@ public class PlayerDataManager implements Listener, Closeable {
             this.isChanged = true;
             return rewards.remove(index);
         }
-    }
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        UUID uuid = event.getPlayer().getUniqueId();
-        loadPlayerData(uuid);
     }
 }
