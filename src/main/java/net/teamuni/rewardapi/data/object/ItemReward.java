@@ -1,21 +1,21 @@
 package net.teamuni.rewardapi.data.object;
 
-import org.bukkit.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
 public class ItemReward extends Reward {
 
-    private ItemStack[] rewardItems;
+    private ItemStackSnapshot[] rewardItems;
 
-    public ItemReward(ItemStack viewItem, ItemStack[] itemStacks) {
+    public ItemReward(ItemStackSnapshot viewItem, ItemStackSnapshot[] itemStacks) {
         super(viewItem);
         this.rewardItems = itemStacks;
     }
 
-    public ItemStack[] getRewardItems() {
+    public ItemStackSnapshot[] getRewardItems() {
         return rewardItems;
     }
 
-    public void setRewardItems(ItemStack[] rewardItems) {
+    public void setRewardItems(ItemStackSnapshot[] rewardItems) {
         this.rewardItems = rewardItems;
     }
 }

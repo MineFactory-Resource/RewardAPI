@@ -1,46 +1,53 @@
 package net.teamuni.rewardapi.serializer;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import java.lang.reflect.Type;
-import java.util.Map;
+import com.google.common.reflect.TypeToken;
+import java.util.Arrays;
+import java.util.List;
 import net.teamuni.rewardapi.data.object.CommandReward;
 import net.teamuni.rewardapi.data.object.ItemReward;
 import net.teamuni.rewardapi.data.object.Reward;
-import org.bukkit.inventory.ItemStack;
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
-public class RewardSerializer implements JsonSerializer<Reward>, JsonDeserializer<Reward> {
+public class RewardSerializer implements TypeSerializer<Reward> {
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
-    public JsonElement serialize(Reward src, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject jsonObject = context.serialize(src.getViewItem()).getAsJsonObject();
-        if (src.isItemReward()) {
-            ItemReward itemReward = (ItemReward) src;
-            jsonObject.add("reward_items", context.serialize(itemReward.getRewardItems()));
+    public @Nullable Reward deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException {
+        ItemStackSnapshot viewItem = value.getValue(TypeToken.of(ItemStackSnapshot.class));
+        ConfigurationNode rewardNode = value.getNode("reward_items");
+        if (!rewardNode.isVirtual()) {
+            List<ItemStackSnapshot> items = rewardNode.getList(TypeToken.of(ItemStackSnapshot.class));
+            return new ItemReward(viewItem, items.toArray(new ItemStackSnapshot[0]));
         } else {
-            jsonObject.add("commands", context.serialize(((CommandReward) src).getCommands()));
+            rewardNode = value.getNode("commands");
+            String[] commands = rewardNode.getValue(TypeToken.of(String[].class));
+            return new CommandReward(viewItem, commands);
         }
-        return jsonObject;
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
-    public Reward deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-        throws JsonParseException {
-        if (!json.isJsonObject()) {
-            return null;
+    public void serialize(@NonNull TypeToken<?> type, @Nullable Reward obj, @NonNull ConfigurationNode value) throws ObjectMappingException {
+        if (obj == null) {
+            return;
         }
 
-        JsonObject jsonObject = json.getAsJsonObject();
-        ItemStack viewItem = ItemStack.deserialize(context.deserialize(json, Map.class));
-        if (jsonObject.has("reward_items")) {
-            ItemStack[] items = context.deserialize(jsonObject.get("reward_items"), ItemStack[].class);
+        value.setValue(TypeToken.of(ItemStackSnapshot.class), obj.getViewItem());
+        if (value.getNode("UnsafeDamage").getInt(0) == 0) {
+            value.removeChild("UnsafeDamage");
         }
 
-        return null;
+        if (obj.isItemReward()) {
+            ItemReward itemReward = (ItemReward) obj;
+            List<ItemStackSnapshot> items = Arrays.asList(itemReward.getRewardItems());
+            value.getNode("reward_items").setValue(new TypeToken<List<ItemStackSnapshot>>() {}, items);
+        } else {
+            value.getNode("commands").setValue(TypeToken.of(String[].class), ((CommandReward) obj).getCommands());
+        }
     }
 }

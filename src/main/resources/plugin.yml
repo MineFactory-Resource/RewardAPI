@@ -1,4 +1,0 @@
-name: RewardAPI
-version: '${version}'
-main: net.teamuni.rewardapi.RewardAPI
-api-version: 1.18

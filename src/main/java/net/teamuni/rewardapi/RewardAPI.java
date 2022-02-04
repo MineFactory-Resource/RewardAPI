@@ -35,6 +35,10 @@ public class RewardAPI extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
+        TypeSerializerCollection.defaults()
+            .register(TypeToken.of(SimpleItemStack.class), new SimpleItemSerializer())
+            .register(TypeToken.of(Reward.class), new RewardSerializer());
+
         this.config = new ConfigManager();
         this.menuConfig = new ConfigManager(this.config, "Menu");
         this.databaseConfig = new ConfigManager(this.config, "Database");
