@@ -1,5 +1,6 @@
 package net.teamuni.rewardapi.serializer;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -18,12 +19,15 @@ public class RewardSerializer implements JsonSerializer<Reward>, JsonDeserialize
 
     @Override
     public JsonElement serialize(Reward src, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject jsonObject = context.serialize(src.getViewItem()).getAsJsonObject();
-        if (src.isItemReward()) {
-            ItemReward itemReward = (ItemReward) src;
-            jsonObject.add("reward_items", context.serialize(itemReward.getRewardItems()));
-        } else {
-            jsonObject.add("commands", context.serialize(((CommandReward) src).getCommands()));
+        JsonObject jsonObject = context.serialize(src.getViewItem().serialize()).getAsJsonObject();
+        if (src instanceof ItemReward itemReward) {
+            JsonArray jsonArray = new JsonArray();
+            for (final ItemStack item : itemReward.getRewardItems()) {
+                jsonArray.add(context.serialize(item.serialize()));
+            }
+            jsonObject.add("reward_items", jsonArray);
+        } else if (src instanceof CommandReward cmdReward) {
+            jsonObject.add("commands", context.serialize(cmdReward.getCommands()));
         }
         return jsonObject;
     }
@@ -38,9 +42,16 @@ public class RewardSerializer implements JsonSerializer<Reward>, JsonDeserialize
         JsonObject jsonObject = json.getAsJsonObject();
         ItemStack viewItem = ItemStack.deserialize(context.deserialize(json, Map.class));
         if (jsonObject.has("reward_items")) {
-            ItemStack[] items = context.deserialize(jsonObject.get("reward_items"), ItemStack[].class);
+            JsonArray jsonArray = jsonObject.getAsJsonArray("reward_items");
+            ItemStack[] items = new ItemStack[jsonArray.size()];
+            for (int i = 0; i < jsonArray.size(); ++i) {
+                items[i] = ItemStack.deserialize(context.deserialize(jsonArray.get(i), Map.class));
+            }
+            return new ItemReward(viewItem, items);
+        } else if (jsonObject.has("commands")) {
+            String[] commands = context.deserialize(jsonObject.get("commands"), String[].class);
+            return new CommandReward(viewItem, commands);
         }
-
         return null;
     }
 }
