@@ -32,9 +32,8 @@ public class MenuPattern {
 
     void apply(@NonNull Menu menu) {
         final int[] i = {0};
-        this.pattern.chars().mapToObj(e -> (char)e).forEach(c -> {
-            menu.setItem(i[0]++, (c != '_' && c != ' ' && c != 'L' && c != 'R' ) ? this.mapping.get(c) : null);
-        });
+        this.pattern.chars().mapToObj(e -> (char)e).forEach(c ->
+            menu.setItem(i[0]++, (c != '_' && c != ' ' && c != 'L' && c != 'R' ) ? this.mapping.get(c) : null));
     }
 
     void updateReward(@NonNull Menu menu, @NonNull List<ItemStack> rewards) {
@@ -44,7 +43,7 @@ public class MenuPattern {
                 menu.setItem(i[0], rewards.size() > i[1]++ ? rewards.get(i[1] - 1) : null);
             }
             i[0]++;
-        });;
+        });
     }
 
     void updateTurningButton(@NonNull Menu menu, boolean canTurnLeft, boolean canTurnRight) {

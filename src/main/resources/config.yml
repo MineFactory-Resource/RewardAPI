@@ -1,3 +1,6 @@
+Command:
+  aliases: [reward, storagebox, 보관함, 리워드]
+
 Menu:
   StorageBox:
     title: '보관함'
