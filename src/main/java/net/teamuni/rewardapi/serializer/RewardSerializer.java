@@ -9,7 +9,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import java.lang.reflect.Type;
-import java.util.Map;
 import net.teamuni.rewardapi.data.object.CommandReward;
 import net.teamuni.rewardapi.data.object.ItemReward;
 import net.teamuni.rewardapi.data.object.Reward;
@@ -19,11 +18,11 @@ public class RewardSerializer implements JsonSerializer<Reward>, JsonDeserialize
 
     @Override
     public JsonElement serialize(Reward src, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject jsonObject = context.serialize(src.getViewItem().serialize()).getAsJsonObject();
+        JsonObject jsonObject = context.serialize(src.getViewItem(), ItemStack.class).getAsJsonObject();
         if (src instanceof ItemReward itemReward) {
             JsonArray jsonArray = new JsonArray();
             for (final ItemStack item : itemReward.getRewardItems()) {
-                jsonArray.add(context.serialize(item.serialize()));
+                jsonArray.add(context.serialize(item, ItemStack.class));
             }
             jsonObject.add("reward_items", jsonArray);
         } else if (src instanceof CommandReward cmdReward) {
@@ -40,12 +39,12 @@ public class RewardSerializer implements JsonSerializer<Reward>, JsonDeserialize
         }
 
         JsonObject jsonObject = json.getAsJsonObject();
-        ItemStack viewItem = ItemStack.deserialize(context.deserialize(json, Map.class));
+        ItemStack viewItem = context.deserialize(json, ItemStack.class);
         if (jsonObject.has("reward_items")) {
             JsonArray jsonArray = jsonObject.getAsJsonArray("reward_items");
             ItemStack[] items = new ItemStack[jsonArray.size()];
             for (int i = 0; i < jsonArray.size(); ++i) {
-                items[i] = ItemStack.deserialize(context.deserialize(jsonArray.get(i), Map.class));
+                items[i] = context.deserialize(jsonArray.get(i), ItemStack.class);
             }
             return new ItemReward(viewItem, items);
         } else if (jsonObject.has("commands")) {
