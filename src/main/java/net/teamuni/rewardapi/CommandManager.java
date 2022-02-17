@@ -145,12 +145,12 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender,
         @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        return switch (args.length) {
+        return sender.hasPermission("rewardapi.admin") ? switch (args.length) {
             case 1 -> Collections.singletonList("주기");
             case 2 -> null;
             case 3 -> StringUtil.copyPartialMatches(args[args.length - 1], this.items, Lists.newArrayList());
             default -> Collections.emptyList();
-        };
+        } : Collections.emptyList();
     }
 
     private static void sendMessage(CommandSender sender, String message) {

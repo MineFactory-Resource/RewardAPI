@@ -8,3 +8,7 @@ libraries:
 commands:
   rewardapi:
     permission: rewardapi.user
+
+permissions:
+  rewardapi.user:
+    default: true
