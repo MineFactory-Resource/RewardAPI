@@ -14,13 +14,18 @@ import java.util.UUID;
 import java.util.logging.Level;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.data.object.Reward;
+import net.teamuni.rewardapi.serializer.BukkitObjectTypeAdapter;
 import net.teamuni.rewardapi.serializer.RewardSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public abstract class Database {
 
     private static final Gson gson = new GsonBuilder()
+        .disableHtmlEscaping()
+        .serializeSpecialFloatingPointValues()
+        .setLenient()
         .registerTypeAdapter(Reward.class, new RewardSerializer())
+        .registerTypeAdapterFactory(BukkitObjectTypeAdapter.FACTORY)
         .create();
     protected final RewardAPI instance;
 

@@ -1,14 +1,11 @@
 package net.teamuni.rewardapi.menu;
 
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.config.ConfigManager;
 import net.teamuni.rewardapi.config.MessageStorage;
@@ -19,10 +16,8 @@ import net.teamuni.rewardapi.data.object.ItemReward;
 import net.teamuni.rewardapi.data.object.Reward;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -57,17 +52,14 @@ public class StorageBoxMenu extends Menu {
         } catch (StringIndexOutOfBoundsException ignored) {}
 
         menuPattern = new MenuPattern(pattern);
-        countReward = countChar(pattern, '_');
+        countReward = countReward(pattern);
 
         Map<Character, ItemStack> map = menuConfig.getMapSimpleItemStack("StorageBox.Items");
         map.entrySet().stream()
             .filter(entry ->
                 entry.getKey() != ' ' && entry.getKey() != '_' &&
                     entry.getKey() != 'L' && entry.getKey() != 'R')
-            .forEach(entry -> {
-                menuPattern.setItem(entry.getKey(),
-                    entry.getValue());
-            });
+            .forEach(entry -> menuPattern.setItem(entry.getKey(), entry.getValue()));
 
         List<ItemStack> issList = Lists.newArrayListWithExpectedSize(4);
         String[] paths = new String[]{
@@ -82,8 +74,8 @@ public class StorageBoxMenu extends Menu {
         menuPattern.setTurningButtons(issList);
     }
 
-    private static int countChar(String str, char ch) {
-        return Math.toIntExact(str.chars().filter(c -> c == ch).count());
+    private static int countReward(String str) {
+        return Math.toIntExact(str.chars().filter(c -> c == '_').count());
     }
 
     public void update() {
