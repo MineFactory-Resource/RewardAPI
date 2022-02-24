@@ -146,7 +146,7 @@ https://textures.minecraft.net/texture/ 뒤에 오는 문자열입니다.
 ```yaml
 Message:
   Menu:
-    out_of_space: '&c공간이 부족합니다.'
+    out_of_space: '&9[ &fRewardAPI &9] &c공간이 부족합니다.'
 ```
 
 아이템 보상을 수령받을때 인벤토리에 공간이 부족하다면 뜨는 메시지를 설정할 수 있습니다.

@@ -36,7 +36,7 @@ Menu:
 
 Message:
   Menu:
-    out_of_space: '&c공간이 부족합니다.'
+    out_of_space: '&9[ &fRewardAPI &9] &c공간이 부족합니다.'
 
 Database:
   save-interval: 300

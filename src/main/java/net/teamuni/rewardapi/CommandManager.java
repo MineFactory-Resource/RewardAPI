@@ -95,11 +95,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                                 if (sender instanceof Player player) {
                                     view = player.getInventory().getItemInMainHand();
                                     if (view.getType().isAir()) {
-                                        sendMessage(sender, "&6[&e-&6] &c아이템을 들고 있지 않습니다.");
+                                        sendMessage(sender, "&9[ &fRewardAPI &9] &c아이템을 들고 있지 않습니다.");
                                         return true;
                                     }
                                 } else {
-                                    sendMessage(sender, "&6[&e-&6] &c" + sender.getName() + "은 손에 들고 있는 아이템을 인식할 수 없습니다.");
+                                    sendMessage(sender, "&9[ &fRewardAPI &9] &c" + sender.getName() + "은 손에 들고 있는 아이템을 인식할 수 없습니다.");
                                     return true;
                                 }
                             } else {
@@ -110,7 +110,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                                         applyNBT(view, varArgs[2]);
                                     }
                                 } else {
-                                    sendMessage(sender, "&6[&e-&6] &c'" + varArgs[1] + "' 은(는) 아이템이 아닙니다.");
+                                    sendMessage(sender, "&9[ &fRewardAPI &9] &c'" + varArgs[1] + "' 은(는) 아이템이 아닙니다.");
                                     return true;
                                 }
                             }
@@ -122,22 +122,23 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                             Reward reward = new CommandReward(view, new String[] { varArgs[3] } );
                             PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
                             playerDataManager.usePlayerData(target.getUniqueId(), (data) -> data.addReward(reward));
-                            sendMessage(sender, "&6[&e-&6] &f해당 플레이어에게 보상을 지급하였습니다.");
+                            sendMessage(sender, "&9[ &fRewardAPI &9] &f해당 플레이어에게 보상을 지급하였습니다.");
                         } else {
-                            sendMessage(sender, "&6[&e-&6] &c해당 플레이어는 서버에 접속한 기록이 없습니다.");
+                            sendMessage(sender, "&9[ &fRewardAPI &9] &c해당 플레이어는 서버에 접속한 기록이 없습니다.");
                         }
                         return true;
                     }
                 }
-                sendMessage(sender, "&6[&e-&6] &c사용법: &f/" + label + " " + arg + " [플레이어] [보일아이템] [커맨드]");
+                sendMessage(sender, "&9[ &fRewardAPI &9] &c사용법: &f/" + label + " " + arg + " [플레이어] [보일아이템] [커맨드]");
                 return true;
             }
         }
 
-        sendMessage(sender, "&6[&e-&6] &f/" + label + " &e- 보상을 받을 수 있는 보관함을 엽니다.");
-        sendMessage(sender, "&6[&e-&6] &f/" + label + " 주기 [플레이어] [보일아이템] [커맨드] &e- 플레이어에게 커맨드 보상을 지급합니다.");
-        sendMessage(sender, "&6[&e-&6] &b - [보일아이템]에 'hand'를 입력 시 손에 들고 있는 아이템을 지정합니다.");
-        sendMessage(sender, "&6[&e-&6] &b - 커맨드에서 %p 는 플레이어 이름으로 치환됩니다.");
+        sendMessage(sender, "&9[ &fRewardAPI &9] &f/" + label + " &7- 보상을 받을 수 있는 보관함을 엽니다.");
+        sendMessage(sender, "&9[ &fRewardAPI &9] &f/" + label + " 주기 [플레이어] [보일아이템] [커맨드]");
+        sendMessage(sender, "&9[ &fRewardAPI &9] &7 - 플레이어에게 커맨드 보상을 지급합니다.");
+        sendMessage(sender, "&9[ &fRewardAPI &9] &7 - [보일아이템]에 'hand'를 입력 시 손에 들고 있는 아이템을 지정합니다.");
+        sendMessage(sender, "&9[ &fRewardAPI &9] &7 - 커맨드에서 '%p' 는 플레이어 이름으로 치환됩니다.");
         return true;
     }
 
