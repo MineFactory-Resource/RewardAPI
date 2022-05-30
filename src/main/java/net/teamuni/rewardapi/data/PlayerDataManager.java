@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.data.object.Reward;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -114,8 +116,13 @@ public class PlayerDataManager implements Listener, Closeable {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        UUID uuid = event.getPlayer().getUniqueId();
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
         loadPlayerData(uuid);
+        PlayerData data = getPlayerData(uuid);
+        if (data == null || data.getRewards().isEmpty()) return;
+        String msg = "&9[ &fRewardAPI &9] &c보관함에 " + data.getRewards().size() + "개의 물품이 남아있습니다.";
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
     }
 
     public static final class PlayerData {
