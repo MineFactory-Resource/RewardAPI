@@ -119,10 +119,11 @@ public class PlayerDataManager implements Listener, Closeable {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
         loadPlayerData(uuid);
-        PlayerData data = getPlayerData(uuid);
-        if (data == null || data.getRewards().isEmpty()) return;
-        String msg = "&9[ &fRewardAPI &9] &c보관함에 " + data.getRewards().size() + "개의 물품이 남아있습니다.";
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
+        usePlayerData(uuid, data -> {
+            if (data == null || data.getRewards().isEmpty()) return;
+            String msg = "&9[ &fRewardAPI &9] &c보관함에 " + data.getRewards().size() + "개의 물품이 남아있습니다.";
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
+        });
     }
 
     public static final class PlayerData {
