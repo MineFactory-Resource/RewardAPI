@@ -121,8 +121,8 @@ public class PlayerDataManager implements Listener, Closeable {
         loadPlayerData(uuid);
         usePlayerData(uuid, data -> {
             if (data == null || data.getRewards().isEmpty()) return;
-            String msg = "&9[ &fRewardAPI &9] &c보관함에 " + data.getRewards().size() + "개의 물품이 남아있습니다.";
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
+            String msg = RewardAPI.getInstance().getMessageStorage().getRawMessage("left_overs");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', String.format(msg, data.getRewards().size())));
         });
     }
 
