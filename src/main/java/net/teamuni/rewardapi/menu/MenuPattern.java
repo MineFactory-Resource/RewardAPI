@@ -1,9 +1,14 @@
 package net.teamuni.rewardapi.menu;
 
 import com.google.common.collect.Lists;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import net.kyori.adventure.text.Component;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -44,6 +49,14 @@ public class MenuPattern {
             }
             i[0]++;
         });
+        if (!rewards.isEmpty()) return;
+        ItemStack item = new ItemStack(Material.BARRIER);
+        item.editMeta(meta -> {
+            Component text = Component.text("§c보관함이 비어있습니다.");
+            meta.displayName(text);
+            meta.lore(Collections.singletonList(text));
+        });
+        menu.setItem(22, item);
     }
 
     void updateTurningButton(@NonNull Menu menu, boolean canTurnLeft, boolean canTurnRight) {
