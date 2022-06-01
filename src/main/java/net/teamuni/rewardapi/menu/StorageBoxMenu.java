@@ -72,6 +72,7 @@ public class StorageBoxMenu extends Menu {
             issList.add(menuConfig.getSimpleItemStack(path).orElse(new ItemStack(Material.AIR)));
         }
         menuPattern.setTurningButtons(issList);
+        menuPattern.setEmptyItem(menuConfig.getSimpleItemStack("StorageBox.Empty").orElse(new ItemStack(Material.BARRIER)));
     }
 
     private static int countReward(String str) {
