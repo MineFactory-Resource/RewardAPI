@@ -16,7 +16,6 @@ public class MenuPattern {
     private final Map<Character, ItemStack> mapping = new HashMap<>();
     private final String pattern;
     private final List<ItemStack> turningButtons = Lists.newArrayListWithExpectedSize(4);
-    private ItemStack emptyItem;
 
     public MenuPattern(@NonNull String pattern) {
         this.pattern = pattern;
@@ -29,10 +28,6 @@ public class MenuPattern {
 
     public void setItem(char key, @NonNull ItemStack is) {
         this.mapping.put(key, is);
-    }
-
-    public void setEmptyItem(ItemStack emptyItem) {
-        this.emptyItem = emptyItem;
     }
 
     public void setTurningButtons(List<ItemStack> iss) {
@@ -54,8 +49,6 @@ public class MenuPattern {
             }
             i[0]++;
         });
-        if (!rewards.isEmpty()) return;
-        menu.setItem(22, this.emptyItem);
     }
 
     void updateTurningButton(@NonNull Menu menu, boolean canTurnLeft, boolean canTurnRight) {
