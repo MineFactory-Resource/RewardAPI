@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.data.object.Reward;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -114,8 +116,14 @@ public class PlayerDataManager implements Listener, Closeable {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        UUID uuid = event.getPlayer().getUniqueId();
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
         loadPlayerData(uuid);
+        usePlayerData(uuid, data -> {
+            if (data == null || data.getRewards().isEmpty()) return;
+            String msg = RewardAPI.getInstance().getMessageStorage().getRawMessage("left_overs");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', String.format(msg, data.getRewards().size())));
+        });
     }
 
     public static final class PlayerData {
