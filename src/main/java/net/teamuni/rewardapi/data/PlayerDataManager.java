@@ -149,7 +149,7 @@ public class PlayerDataManager implements Listener, Closeable {
             this.isChanged = true;
             rewards.add(reward);
             applyPlayer(player ->
-                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', RewardAPI.getInstance().getMessageStorage().getRawMessage("add_reward"))));
+                    player.sendMessage(RewardAPI.getInstance().getMessageStorage().getMessage("add_reward")));
         }
 
         public Reward removeReward(int index) {
