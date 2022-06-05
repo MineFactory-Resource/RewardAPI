@@ -6,6 +6,7 @@ import java.util.WeakHashMap;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -40,6 +41,7 @@ public abstract class Menu {
 
     public void open(Player player) {
         menus.put(player, this);
+        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 2, 1);
         player.openInventory(inv);
     }
 
