@@ -28,6 +28,7 @@ public class StorageBoxMenu extends Menu {
     private static String title;
     private static int rows;
     private static int countReward;
+    private static ItemStack emptyItem;
     private static final Inventory tempInv = Bukkit.createInventory(null, 36);
     private final UUID uuid;
     private int page = 1;
@@ -72,6 +73,7 @@ public class StorageBoxMenu extends Menu {
             issList.add(menuConfig.getSimpleItemStack(path).orElse(new ItemStack(Material.AIR)));
         }
         menuPattern.setTurningButtons(issList);
+        emptyItem = menuConfig.getSimpleItemStack("StorageBox.Empty").orElse(new ItemStack(Material.BARRIER));
     }
 
     private static int countReward(String str) {
@@ -102,6 +104,8 @@ public class StorageBoxMenu extends Menu {
         menuPattern.updateTurningButton(this,
             this.page != 1,
             Math.ceil((double) rewards.size() / countReward) >= this.page + 1);
+        if (!rewards.isEmpty()) return;
+        setItem(22, emptyItem);
     }
 
     @Override

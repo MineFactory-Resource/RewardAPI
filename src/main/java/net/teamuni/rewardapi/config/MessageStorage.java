@@ -14,6 +14,10 @@ public class MessageStorage extends ConfigManager {
         return getValue(String.class, "Not message loaded: " + String.join(".", key), key);
     }
 
+    public String getRawMessage(String key, Object... args) {
+        return String.format(getRawMessage(key), args);
+    }
+
     public TextComponent getMessage(String key) {
         return Component.text(ChatColor.translateAlternateColorCodes('&', getRawMessage(key)));
     }

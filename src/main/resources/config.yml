@@ -33,6 +33,12 @@ Menu:
         Cant:
           type: 'orange_stained_glass_pane'
           name: ''
+    Empty:
+      type: 'barrier'
+      name: '&c보관함이 비어있습니다'
+      lore:
+        - '&c보관함이 비어있습니다'
+
 
 Message:
   Menu:

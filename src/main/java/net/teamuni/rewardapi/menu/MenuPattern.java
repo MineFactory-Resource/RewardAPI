@@ -1,11 +1,12 @@
 package net.teamuni.rewardapi.menu;
 
 import com.google.common.collect.Lists;
+import org.bukkit.inventory.ItemStack;
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.inventory.ItemStack;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class MenuPattern {
     private final Map<Character, ItemStack> mapping = new HashMap<>();

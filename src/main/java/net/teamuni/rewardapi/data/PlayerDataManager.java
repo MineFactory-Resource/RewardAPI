@@ -121,8 +121,8 @@ public class PlayerDataManager implements Listener, Closeable {
         loadPlayerData(uuid);
         usePlayerData(uuid, data -> {
             if (data == null || data.getRewards().isEmpty()) return;
-            String msg = RewardAPI.getInstance().getMessageStorage().getRawMessage("left_overs");
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', String.format(msg, data.getRewards().size())));
+            String msg = RewardAPI.getInstance().getMessageStorage().getRawMessage("left_overs",  data.getRewards().size());
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
         });
     }
 
