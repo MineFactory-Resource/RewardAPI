@@ -44,6 +44,7 @@ Message:
   Menu:
     out_of_space: '&9[ &fRewardAPI &9] &c공간이 부족합니다.'
   left_overs: '&9[ &fRewardAPI &9] &c보관함에 %d개의 물품이 남아있습니다.' #%d는 남은 개수를 표시합니다
+  add_reward: '&9[ &fRewardAPI &9] &c새로운 물품이 보관함에 추가되었습니다.'
 
 Database:
   save-interval: 300

@@ -148,11 +148,19 @@ public class PlayerDataManager implements Listener, Closeable {
         public void addReward(Reward reward) {
             this.isChanged = true;
             rewards.add(reward);
+            applyPlayer(player ->
+                    player.sendMessage(RewardAPI.getInstance().getMessageStorage().getMessage("add_reward")));
         }
 
         public Reward removeReward(int index) {
             this.isChanged = true;
             return rewards.remove(index);
+        }
+
+        private void applyPlayer(Consumer<Player> consumer) {
+            Player player = Bukkit.getPlayer(this.uuid);
+            if (player == null || !player.isOnline()) return;
+            consumer.accept(player);
         }
     }
 }
