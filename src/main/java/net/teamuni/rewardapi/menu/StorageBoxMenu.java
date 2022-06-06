@@ -150,7 +150,7 @@ public class StorageBoxMenu extends Menu {
                 }
             }
             playerData.removeReward(rewardIndex);
-            player.playSound(RewardAPI.getInstance().getSoundStorage().getSound("add_reward"));
+            player.playSound(RewardAPI.getInstance().getSoundStorage().getSound("get_reward"));
         } else {
             return;
         }
