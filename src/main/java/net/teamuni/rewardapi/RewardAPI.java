@@ -4,6 +4,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import net.teamuni.rewardapi.config.ConfigManager;
 import net.teamuni.rewardapi.config.MessageStorage;
+import net.teamuni.rewardapi.config.SoundStorage;
 import net.teamuni.rewardapi.data.PlayerDataManager;
 import net.teamuni.rewardapi.data.database.Database;
 import net.teamuni.rewardapi.data.database.JsonDatabase;
@@ -22,6 +23,7 @@ public class RewardAPI extends JavaPlugin {
 
     private ConfigManager menuConfig;
     private MessageStorage messageStorage;
+    private SoundStorage SoundStorage;
 
     public static RewardAPI getInstance() {
         return instance;
@@ -34,6 +36,7 @@ public class RewardAPI extends JavaPlugin {
         ConfigManager config = new ConfigManager();
         this.menuConfig = new ConfigManager(config, "Menu");
         this.messageStorage = new MessageStorage(config, "Message");
+        this.SoundStorage = new SoundStorage(config, "Sound");
 
         Bukkit.getPluginManager().registerEvents(new InventoryEventListener(), this);
         StorageBoxMenu.init();
@@ -86,4 +89,7 @@ public class RewardAPI extends JavaPlugin {
         return messageStorage;
     }
 
+    public SoundStorage getSoundStorage() {
+        return SoundStorage;
+    }
 }

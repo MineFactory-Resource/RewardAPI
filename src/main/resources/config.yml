@@ -39,6 +39,19 @@ Menu:
       lore:
         - '&c보관함이 비어있습니다'
 
+Sound:
+  storagebox_open:
+    sound: block.chest.open
+    volume: 1
+    pitch: 1
+  get_reward:
+    sound: item.armor.equip_chain
+    volume: 1
+    pitch: 1
+  add_reward:
+    sound: block.bubble_column.bubble_pop
+    volume: 1
+    pitch: 1
 
 Message:
   Menu:

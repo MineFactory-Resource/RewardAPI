@@ -11,6 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import net.kyori.adventure.sound.Sound;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.data.object.Reward;
 import org.bukkit.Bukkit;
@@ -149,7 +151,10 @@ public class PlayerDataManager implements Listener, Closeable {
             this.isChanged = true;
             rewards.add(reward);
             applyPlayer(player ->
-                    player.sendMessage(RewardAPI.getInstance().getMessageStorage().getMessage("add_reward")));
+            {
+                player.sendMessage(RewardAPI.getInstance().getMessageStorage().getMessage("add_reward"));
+                player.playSound(RewardAPI.getInstance().getSoundStorage().getSound("add_reward"));
+            });
         }
 
         public Reward removeReward(int index) {

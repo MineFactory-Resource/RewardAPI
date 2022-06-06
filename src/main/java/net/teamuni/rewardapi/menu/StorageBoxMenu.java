@@ -150,7 +150,7 @@ public class StorageBoxMenu extends Menu {
                 }
             }
             playerData.removeReward(rewardIndex);
-            // TODO 이펙트
+            player.playSound(RewardAPI.getInstance().getSoundStorage().getSound("get_reward"));
         } else {
             return;
         }
