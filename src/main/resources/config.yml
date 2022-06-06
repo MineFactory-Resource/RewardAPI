@@ -45,7 +45,7 @@ Sound:
     volume: 1
     pitch: 1
   get_reward:
-    sound: item.armor.equip.chain
+    sound: item.armor.equip_chain
     volume: 1
     pitch: 1
   add_reward:
