@@ -1,5 +1,7 @@
 package net.teamuni.rewardapi.data.object;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class CommandReward extends Reward {
@@ -17,5 +19,13 @@ public class CommandReward extends Reward {
 
     public void setCommands(String[] commands) {
         this.commands = commands;
+    }
+
+    @Override
+    public boolean claim(Player player) {
+        for (String command : this.commands) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+        }
+        return false;
     }
 }

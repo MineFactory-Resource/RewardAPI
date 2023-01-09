@@ -13,13 +13,18 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class SQLDatabase extends Database {
 
+    private final static String REWARDS_TABLE = "rewardapi_rewards";
+    private final static String LOG_RECEIVED_TABLE = "rewardapi_log_received";
+    private final static String LOG_CLAIMED_TABLE = "rewardapi_log_claimed";
+
     private final DataSource sql;
     private final String tableName;
 
     private final String selectStatement;
     private final String insertStatement;
 
-    public SQLDatabase(RewardAPI instance, String host, int port, String database, String tableName, String parameters, String userName, String password)
+    public SQLDatabase(RewardAPI instance, String host, int port, String database, String tableName,
+        String parameters, String userName, String password)
         throws SQLException {
         super(instance);
 
@@ -36,8 +41,9 @@ public class SQLDatabase extends Database {
         this.sql = new HikariDataSource(config);
         this.tableName = tableName;
 
-        this.selectStatement = "SELECT reward FROM " + tableName + " WHERE uuid = '%s';";
-        this.insertStatement = "INSERT INTO " + tableName + "(uuid, reward) VALUES ('%1$s', '%2$s') ON DUPLICATE KEY UPDATE reward = '%2$s';";
+        this.selectStatement = "SELECT reward FROM " + REWARDS_TABLE + " WHERE uuid = '%s';";
+        this.insertStatement = "INSERT INTO " + REWARDS_TABLE
+            + "(uuid, reward) VALUES ('%1$s', '%2$s') ON DUPLICATE KEY UPDATE reward = '%2$s';";
 
         initTable();
     }

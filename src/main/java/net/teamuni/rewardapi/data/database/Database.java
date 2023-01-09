@@ -78,4 +78,10 @@ public abstract class Database {
 
     abstract protected void saveJson(@NonNull UUID uuid, @NonNull String json)
         throws IOException, SQLException;
+
+    enum Action {
+        RECEIVED, // 보관함에 보상을 받았을 때
+        CLAIMED // 보관함에서 받은 보상을 직접 수령할때
+    }
+    abstract void log(Action action, UUID player, Reward reward);
 }

@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.teamuni.rewardapi.api.StorageBoxAPI;
 import net.teamuni.rewardapi.config.ConfigManager;
 import net.teamuni.rewardapi.data.PlayerDataManager;
 import net.teamuni.rewardapi.data.object.CommandReward;
@@ -120,8 +121,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                             }
                             varArgs[3] = varArgs[3].replaceAll("%p", playerName);
                             Reward reward = new CommandReward(view, new String[] { varArgs[3] } );
-                            PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
-                            playerDataManager.usePlayerData(target.getUniqueId(), (data) -> data.addReward(reward));
+                            StorageBoxAPI.give(target.getUniqueId(), reward);
                             sendMessage(sender, "&9[ &fRewardAPI &9] &f해당 플레이어에게 보상을 지급하였습니다.");
                         } else {
                             sendMessage(sender, "&9[ &fRewardAPI &9] &c해당 플레이어는 서버에 접속한 기록이 없습니다.");

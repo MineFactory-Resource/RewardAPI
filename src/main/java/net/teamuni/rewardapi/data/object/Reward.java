@@ -1,5 +1,6 @@
 package net.teamuni.rewardapi.data.object;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public abstract class Reward {
@@ -17,4 +18,6 @@ public abstract class Reward {
     public boolean isItemReward() {
         return this instanceof ItemReward;
     }
+
+    abstract public boolean claim(Player player);
 }

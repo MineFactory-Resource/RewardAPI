@@ -6,19 +6,13 @@ import net.teamuni.rewardapi.data.PlayerDataManager;
 import net.teamuni.rewardapi.data.object.Reward;
 
 public class StorageBoxAPI {
-    private StorageBoxAPI() {}
 
-    private static class InnerInstanceClazz {
-        private static final StorageBoxAPI uniqueInstance = new StorageBoxAPI();
+    private StorageBoxAPI() {
     }
 
-    public static StorageBoxAPI getInstance() {
-        return InnerInstanceClazz.uniqueInstance;
-    }
-
-    public void give(UUID uuid, Reward reward) {
+    public static void give(UUID uuid, Reward reward) {
         PlayerDataManager playerDataManager = RewardAPI.getInstance().getPlayerDataManager();
-        playerDataManager.usePlayerData(uuid, (playerData) -> {playerData.addReward(reward);});
+        playerDataManager.usePlayerData(uuid, data -> data.addReward(reward));
     }
 
     // TODO

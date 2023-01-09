@@ -1,18 +1,14 @@
 package net.teamuni.rewardapi.menu;
 
 import com.google.common.collect.Lists;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.config.ConfigManager;
-import net.teamuni.rewardapi.config.MessageStorage;
 import net.teamuni.rewardapi.data.PlayerDataManager;
 import net.teamuni.rewardapi.data.PlayerDataManager.PlayerData;
-import net.teamuni.rewardapi.data.object.CommandReward;
-import net.teamuni.rewardapi.data.object.ItemReward;
 import net.teamuni.rewardapi.data.object.Reward;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,7 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 public class StorageBoxMenu extends Menu {
 
@@ -122,35 +117,22 @@ public class StorageBoxMenu extends Menu {
 
         if (c == 'L' && this.page != 1) {
             this.page--;
+            Bukkit.getScheduler().runTask(RewardAPI.getInstance(), this::update);
         } else if (c == 'R' && Math.ceil((double) rewards.size() / countReward) >= this.page + 1) {
             this.page++;
+            Bukkit.getScheduler().runTask(RewardAPI.getInstance(), this::update);
         } else if (c == '_') {
             int rewardIndex = getRewardIndex(slotIndex);
             if (rewardIndex >= rewards.size()) {
                 return;
             }
             Reward reward = rewards.get(rewardIndex);
-            if (reward.isItemReward()) {
-                ItemReward itemReward = (ItemReward) reward;
-                if (canFit(player, itemReward.getRewardItems())) {
-                    player.getInventory().addItem(itemReward.getRewardItems());
-                } else {
-                    MessageStorage messageStorage = RewardAPI.getInstance().getMessageStorage();
-                    player.sendMessage(messageStorage.getMessage("Menu.out_of_space"));
-                    return;
-                }
-            } else {
-                CommandReward commandReward = (CommandReward) reward;
-                for (String command : commandReward.getCommands()) {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-                }
+            if (reward.claim(player)) {
+                playerData.removeReward(rewardIndex);
+                // TODO 이펙트
+                Bukkit.getScheduler().runTask(RewardAPI.getInstance(), this::update);
             }
-            playerData.removeReward(rewardIndex);
-            // TODO 이펙트
-        } else {
-            return;
         }
-        Bukkit.getScheduler().runTask(RewardAPI.getInstance(), this::update);
     }
 
     private int getRewardIndex(int slotIndex) {
@@ -167,18 +149,5 @@ public class StorageBoxMenu extends Menu {
             }
         }
         return (page - 1) * countReward + tmp - 1;
-    }
-
-    public static boolean canFit(Player p, ItemStack[] items) {
-        PlayerInventory pInv = p.getInventory();
-        for (int i = 0; i < 36; i++) {
-            ItemStack item = pInv.getItem(i);
-            if (item != null) {
-                tempInv.setItem(i, item.clone());
-            }
-        }
-        Map<Integer, ItemStack> map = tempInv.addItem(Arrays.stream(items).map(ItemStack::clone).toArray(ItemStack[]::new));
-        tempInv.clear();
-        return map.isEmpty();
     }
 }
