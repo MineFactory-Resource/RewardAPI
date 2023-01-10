@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 public abstract class Reward {
 
     private final ItemStack viewItem;
+    private long receivedLogId = -1;
 
     protected Reward(ItemStack viewItem) {
         this.viewItem = viewItem;
@@ -15,9 +16,13 @@ public abstract class Reward {
         return viewItem;
     }
 
-    public boolean isItemReward() {
-        return this instanceof ItemReward;
+    abstract public boolean claim(Player player);
+
+    public long getReceivedLogId() {
+        return receivedLogId;
     }
 
-    abstract public boolean claim(Player player);
+    public void setReceivedLogId(long receivedLogId) {
+        this.receivedLogId = receivedLogId;
+    }
 }

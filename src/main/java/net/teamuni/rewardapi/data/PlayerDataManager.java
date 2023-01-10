@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import net.teamuni.rewardapi.RewardAPI;
+import net.teamuni.rewardapi.data.database.Database.Action;
 import net.teamuni.rewardapi.data.object.Reward;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -126,7 +127,7 @@ public class PlayerDataManager implements Listener, Closeable {
         });
     }
 
-    public static final class PlayerData {
+    public final class PlayerData {
 
         private final UUID uuid;
         private final ArrayList<Reward> rewards;
@@ -148,6 +149,7 @@ public class PlayerDataManager implements Listener, Closeable {
         public void addReward(Reward reward) {
             this.isChanged = true;
             rewards.add(reward);
+            instance.getDatabase().log(Action.RECEIVED, uuid, reward);
         }
 
         public Reward removeReward(int index) {

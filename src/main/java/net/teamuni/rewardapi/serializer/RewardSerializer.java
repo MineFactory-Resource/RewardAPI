@@ -6,6 +6,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import java.lang.reflect.Type;
@@ -28,6 +29,9 @@ public class RewardSerializer implements JsonSerializer<Reward>, JsonDeserialize
         } else if (src instanceof CommandReward cmdReward) {
             jsonObject.add("commands", context.serialize(cmdReward.getCommands()));
         }
+        if (src.getReceivedLogId() != -1) {
+            jsonObject.add("received_log_id", new JsonPrimitive(src.getReceivedLogId()));
+        }
         return jsonObject;
     }
 
@@ -40,17 +44,21 @@ public class RewardSerializer implements JsonSerializer<Reward>, JsonDeserialize
 
         JsonObject jsonObject = json.getAsJsonObject();
         ItemStack viewItem = context.deserialize(json, ItemStack.class);
+        Reward reward = null;
         if (jsonObject.has("reward_items")) {
             JsonArray jsonArray = jsonObject.getAsJsonArray("reward_items");
             ItemStack[] items = new ItemStack[jsonArray.size()];
             for (int i = 0; i < jsonArray.size(); ++i) {
                 items[i] = context.deserialize(jsonArray.get(i), ItemStack.class);
             }
-            return new ItemReward(viewItem, items);
+            reward = new ItemReward(viewItem, items);
         } else if (jsonObject.has("commands")) {
             String[] commands = context.deserialize(jsonObject.get("commands"), String[].class);
-            return new CommandReward(viewItem, commands);
+            reward = new CommandReward(viewItem, commands);
         }
-        return null;
+        if (reward != null && jsonObject.has("received_log_id")) {
+            reward.setReceivedLogId(jsonObject.get("received_log_id").getAsLong());
+        }
+        return reward;
     }
 }

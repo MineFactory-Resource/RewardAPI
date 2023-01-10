@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.UUID;
 import javax.sql.DataSource;
 import net.teamuni.rewardapi.RewardAPI;
+import net.teamuni.rewardapi.data.object.Reward;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class SQLDatabase extends Database {
@@ -86,5 +87,15 @@ public class SQLDatabase extends Database {
             Statement stmt = con.createStatement()) {
             stmt.execute(String.format(insertStatement, uuid, json));
         }
+    }
+
+    @Override
+    protected long logReceived(UUID uuid, String json) {
+        return 0;
+    }
+
+    @Override
+    protected void logClaimed(UUID uuid, long receivedLogId) {
+
     }
 }

@@ -9,6 +9,7 @@ import net.teamuni.rewardapi.RewardAPI;
 import net.teamuni.rewardapi.config.ConfigManager;
 import net.teamuni.rewardapi.data.PlayerDataManager;
 import net.teamuni.rewardapi.data.PlayerDataManager.PlayerData;
+import net.teamuni.rewardapi.data.database.Database.Action;
 import net.teamuni.rewardapi.data.object.Reward;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -129,6 +130,7 @@ public class StorageBoxMenu extends Menu {
             Reward reward = rewards.get(rewardIndex);
             if (reward.claim(player)) {
                 playerData.removeReward(rewardIndex);
+                RewardAPI.getInstance().getDatabase().log(Action.CLAIMED, player.getUniqueId(), reward);
                 // TODO 이펙트
                 Bukkit.getScheduler().runTask(RewardAPI.getInstance(), this::update);
             }
