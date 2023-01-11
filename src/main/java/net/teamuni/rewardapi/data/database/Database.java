@@ -80,17 +80,23 @@ public abstract class Database {
         throws IOException, SQLException;
 
     public void log(Action action, UUID player, Reward reward) {
-        if (action == Action.RECEIVED) {
-            long id = logReceived(player, gson.toJson(reward));
-            reward.setReceivedLogId(id);
-        } else if (reward.getReceivedLogId() > 0) {
-            logClaimed(player, reward.getReceivedLogId());
+        try {
+            if (action == Action.RECEIVED) {
+                long id = logReceived(player, gson.toJson(reward));
+                reward.setReceivedLogId(id);
+            } else if (reward.getReceivedLogId() > 0) {
+                logClaimed(player, reward.getReceivedLogId());
+            }
+        } catch (IOException | SQLException e) {
+            this.instance.getLogger()
+                .log(Level.SEVERE, "Failed to log. (action=" + action + ", uuid=" + player + ")", e);
         }
     }
 
-    abstract protected long logReceived(UUID uuid, String json);
+    abstract protected long logReceived(UUID uuid, String json) throws IOException, SQLException;
 
-    abstract protected void logClaimed(UUID uuid, long receivedLogId);
+    abstract protected void logClaimed(UUID uuid, long receivedLogId)
+        throws IOException, SQLException;
 
     public enum Action {
         RECEIVED, // 보관함에 보상을 받았을 때
