@@ -54,6 +54,23 @@ public class SQLDatabase extends Database {
         initTable();
     }
 
+    private static boolean existsIndex(Connection conn, String table, String indexName)
+        throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(
+                "SELECT COUNT(1) indexExists FROM INFORMATION_SCHEMA.STATISTICS\n"
+                    + "WHERE table_schema=DATABASE() AND table_name='" + table
+                    + "' AND index_name='"
+                    + indexName + "';");
+            try (rs) {
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
+            }
+        }
+        return false;
+    }
+
     private Connection getConnection() throws SQLException {
         return sql.getConnection();
     }
@@ -77,7 +94,9 @@ public class SQLDatabase extends Database {
                 + "    time   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,"
                 + "    PRIMARY KEY (id)"
                 + ");");
-            stmt.execute("CREATE INDEX idx_player ON " + LOG_RECEIVED_TABLE + " (player);");
+            if (!existsIndex(con, LOG_RECEIVED_TABLE, "idx_player")) {
+                stmt.execute("CREATE INDEX idx_player ON " + LOG_RECEIVED_TABLE + " (player);");
+            }
             stmt.execute("CREATE TABLE IF NOT EXISTS " + LOG_CLAIMED_TABLE
                 + "("
                 + "    id              INT UNSIGNED NOT NULL AUTO_INCREMENT,"
@@ -86,7 +105,9 @@ public class SQLDatabase extends Database {
                 + "    time            TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,"
                 + "    PRIMARY KEY (id)"
                 + ");");
-            stmt.execute("CREATE INDEX idx_player ON " + LOG_CLAIMED_TABLE + " (player);");
+            if (!existsIndex(con, LOG_RECEIVED_TABLE, "idx_player")) {
+                stmt.execute("CREATE INDEX idx_player ON " + LOG_RECEIVED_TABLE + " (player);");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -114,7 +135,8 @@ public class SQLDatabase extends Database {
 
     @Override
     protected long logReceived(UUID uuid, String json) throws SQLException {
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(this.logReceivedStatement, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(
+            this.logReceivedStatement, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, uuid.toString());
             ps.setString(2, json);
             ps.execute();
@@ -129,7 +151,8 @@ public class SQLDatabase extends Database {
 
     @Override
     protected void logClaimed(UUID uuid, long receivedLogId) throws SQLException {
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(this.logClaimedStatement)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(
+            this.logClaimedStatement)) {
             ps.setString(1, uuid.toString());
             ps.setLong(2, receivedLogId);
             ps.execute();
