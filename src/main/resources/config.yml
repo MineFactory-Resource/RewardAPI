@@ -49,7 +49,6 @@ Database:
     host: localhost
     port: 3306
     database: minecraft
-    tablename: rewardapi_rewards
     parameters: '?characterEncoding=utf8'
     username: root
     password: password
