@@ -26,6 +26,6 @@ public class CommandReward extends Reward {
         for (String command : this.commands) {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
         }
-        return false;
+        return true;
     }
 }
