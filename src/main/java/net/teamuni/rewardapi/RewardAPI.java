@@ -49,12 +49,11 @@ public class RewardAPI extends JavaPlugin {
             String host = databaseConfig.getString("", "MySQL.host");
             int port = databaseConfig.getValue(Integer.TYPE, 3306, "MySQL.port");
             String database = databaseConfig.getString("", "MySQL.database");
-            String tableName = databaseConfig.getString("", "MySQL.tablename");
             String parameters = databaseConfig.getString("", "MySQL.parameters");
             String userName = databaseConfig.getString("", "MySQL.username");
             String password = databaseConfig.getString("", "MySQL.password");
             try {
-                this.database = new SQLDatabase(this, host, port, database, tableName, parameters, userName, password);
+                this.database = new SQLDatabase(this, host, port, database, parameters, userName, password);
             } catch (SQLException e) {
                 e.printStackTrace();
             }

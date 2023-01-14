@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 
 import net.kyori.adventure.sound.Sound;
 import net.teamuni.rewardapi.RewardAPI;
+import net.teamuni.rewardapi.data.database.Database.Action;
 import net.teamuni.rewardapi.data.object.Reward;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -128,7 +129,7 @@ public class PlayerDataManager implements Listener, Closeable {
         });
     }
 
-    public static final class PlayerData {
+    public final class PlayerData {
 
         private final UUID uuid;
         private final ArrayList<Reward> rewards;
@@ -150,11 +151,11 @@ public class PlayerDataManager implements Listener, Closeable {
         public void addReward(Reward reward) {
             this.isChanged = true;
             rewards.add(reward);
-            applyPlayer(player ->
-            {
+            applyPlayer(player -> {
                 player.sendMessage(RewardAPI.getInstance().getMessageStorage().getMessage("add_reward"));
                 player.playSound(RewardAPI.getInstance().getSoundStorage().getSound("add_reward"));
             });
+            instance.getDatabase().log(Action.RECEIVED, uuid, reward);
         }
 
         public Reward removeReward(int index) {
